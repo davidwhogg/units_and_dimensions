@@ -273,7 +273,7 @@ That is, when you analyze a test-set (or validation) example $n'$, and you want 
 \begin{enumerate}
     \item Get super-features $z_{n'u}$ from the features $x_{n'j}$ and get the scales $b_{n's}$ from those super-features as above in the scaling step.
     \item Scale the features $x_{n'j}$ into dimensionless features $\xi_{n'j}$, as above.
-    \item Apply machine-learned functions $f(\cdot)$ to dimensionless features to get dimensionless predictions $\hat{\eta}_{n'r}$.
+    \item Apply machine-learned functions $f_r(\cdot)$ to the dimensionless features to get dimensionless predictions $\hat{\eta}_{n'r}$.
     \item Scale dimensionless predictions $\hat{\eta}_{n'r}$ into dimensioned label predictions $\hat{y}_{n'r}$ by
     \begin{align}
         \hat{y}_{n'r} = \hat{\eta}_{n'r}\,\prod_{s=1}^S b_{n's}^{\,a_{rs}}
