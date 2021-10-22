@@ -1,0 +1,339 @@
+% style notes:
+% ------------
+% - One sentence per text-editor line, please (for diffing),
+% - Use \secref and \eqref and so on, don't roll your own.
+
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{dutchcal}
+
+\addtolength{\topmargin}{-0.85in}
+\addtolength{\textheight}{2.50in}
+\linespread{1.08} % trust in Hogg
+\pagestyle{myheadings}
+\markboth{}{Hogg, Villar, others / Dimensionless machine learning}
+
+\title{\bfseries
+Dimensionless machine learning:\\
+Improving generalization through units-aware scalings.}
+\author{Hogg, Villar, others}
+\date{September 2021}
+
+% Text macros
+\newcommand{\documentname}{\textsl{Article}}
+\newcommand{\sectionname}{Section}
+\newcommand{\secref}[1]{\sectionname~\ref{#1}}
+\newcommand{\project}[1]{\textsl{#1}}
+\newcommand{\astropy}{\project{astropy}}
+
+% Math macros
+\newcommand{\dd}{\mathrm{d}}
+\newcommand{\set}[1]{\mathcal{#1}}
+\newcommand{\setS}{\set{S}}
+
+% Units macros
+\newcommand{\unit}[1]{\mathrm{#1}}
+\newcommand{\kg}{\unit{kg}}
+\newcommand{\m}{\unit{m}}
+\newcommand{\s}{\unit{s}}
+\newcommand{\K}{\unit{K}}
+\newcommand{\A}{\unit{A}}
+\newcommand{\J}{\unit{J}}
+\newcommand{\Pa}{\unit{Pa}}
+\newcommand{\V}{\unit{V}}
+
+\frenchspacing\raggedbottom\sloppy\sloppypar\thispagestyle{empty}
+\begin{document}
+\maketitle
+
+\begin{abstract}\noindent
+    Physical laws obey dimensional relationships:
+    Quantities have well-defined units, and the units of terms to be added or subtracted must agree.
+    General machine-learning methods do not make use of these important relationships.
+    Here we propose and demonstrate a simple method for taking account of the units of the inputs and outputs of any machine-learning method.
+    We demonstrate with a simple physics problem that finding and applying units scalings to standard machine-learning methods can improve accuracy and generalization.
+    The methods we propose can be used with almost any pre-existing machine-learning method at essentially no additional computational cost.
+    It does, however, put additional requirements on the user or investigator, in terms of encoding the units of all inputs and outputs.
+\end{abstract}
+
+\section{Introduction}
+
+Physical laws and the quantities of which they are composed have well-defined units.
+There are algebraic rules in physics---and indeed all the sciences---that regulate the consistent use of units.
+In physics we use these rules to make dimensional arguments that develop intuitions and explanations for physical laws.
+For example, imagine that you have a simple pendulum with a length $\ell$ of light, inextensible string with a bob of mass $m$ at the end, swinging in a room in which the acceleration due to gravity is $g$. What is the period of this pendulum? The only combination of these quantities $\ell, m, g$ that has units of time is $\sqrt{l/g}$. That is, you \emph{only have to know the units of the inputs} to learn that the period of a pendulum depends on the square root of the length $\ell$ of the string, and to learn that the period doesn't depend at all on the mass $m$.
+
+This example demonstrates that the units of physical quantities alone can be used to make physical predictions about scalings, which---in the language of machine learning---is a form of \emph{generalization}.
+That suggests that if we can make machine-learning methods units-aware, we can make machine-learning methods that will generalize better.
+And if we can build this units-awareness into state-of-the-art methods, we might be able to move the state of the art.
+
+Units-respecting numerical methods have been implemented in some data-analysis languages (for example, in \astropy; \cite{astropy}).
+The enforcement of the units in \astropy{} code enforces certain kinds of code correctness, because effectively every encoded numerical expression contains its own units-based unit test (see what we did there?).
+The \astropy{} implementation also has a concept of dimensions, abstracted from units, that is relevant for what follows.
+
+The work presented here builds on previous work we have done on machine learning for physics, in which we have shown that group-invariant scalars are the only inputs needed by a machine-learning method, if you want to learn group-equivariant functions of geometric objects (such as scalars, vectors, and tensors) \cite{villar, yao}.
+With what is developed here, we can make these scalars dimensionless before they are used as inputs, and then scale the dimensions or units back in before the final outputs are delivered.
+In both the scalars project and this one on units, the fundamental approach is to transform the features into invariant forms before they are used to train the machine-learning method, and then to un-transform label predictions at the output or at test time.
+These transformation solutions to symmetry-respecting machine learning are simple to implement and perform extremely well \cite{yao}.
+
+The units scalings we propose here are superficially similar to the preconditioning or normalizations of input data that are common in machine-learning methods at the present day.
+But they are different in two absolutely critical respects.
+The first is that the scalings we propose are rigidly required to obey closure relationships that are dimensionally correct or consistent from a units perspective.
+The second is that we \emph{undo at output} the scalings that we put in at input.
+This latter point is extremely important:
+Whenever an investigator performs an object-by-object normalization of input features (and doesn't un-normalize output predictions), the investigator is removing degrees of freedom from their methods, which in turn will null or eliminate certain kinds of discoverable scalings or generalizations.
+For example, if the label on some data is something like the mean of the features (or depends critically on the mean of the features), any approach that scales the features to make the mean unity or zero (say) will be incapable of learning.
+What we present here will not have this problem!
+However, it will require additional assumptions, and put additional burdens on the investigator or user.
+
+There are two kinds of burdens on the investigator that a proper use of units requires.
+These burdens are analogous to the kinds of burdens on the investigator that arise when, for example, rotation symmetries are enforced:
+The first burden we will place on the investigator is that every input to the problem (every feature and label in the training and test sets) must have known dimensions and be provided in a self-consistent system of units.
+This is analogous to the requirement, in rotation-symmetric problems, that every input to the problem (every feature and label) must have its transformation properties with respect to rotations specified (scalars are different from vectors, which are different from tensors).
+The second burden we will place on the investigator is that every dimensioned input or parameter that can matter to the problem must be included as a feature.
+The analogy with symmetries is that, for example, the physical problem of a pendulum swinging is not fully rotationally invariant if, say, the acceleration due to gravity $g$ is not included as an input.\footnote{HOGG: Comment on the point that Finzi \cite{finzi} calls the double pendulum O(2) while we \cite{yao} call it O(3)?}
+If the acceleration due to gravity is implicitly treated as the same for all training data and not provided as an input feature to the regression problem, then the problem is not rotationally invariant (``down'' is different from ``sideways'').
+If the acceleration due to gravity \emph{is} included, then the problem becomes explicitly rotationally invariant.
+In our case, this means that things like fundamental constants (Newton's constant $G$, the speed of light $c$, Planck's constant $\hbar$, Boltzmann's constant $k$, and so on) might have to be included as features, if gravity, relativity, quantum effects, or thermodynamic properties (for example) are expected to arise in the problem.
+
+This work lives in a broader context in machine learning of including, encoding, or learning symmetries, invariances, and equivariances in machine-learning problems.
+Examples include...HOGG QUICK LIT REVIEW.
+
+In what follows, we are imagining a machine-learning setting in which both the inputs and the outputs to the machine-learning method are objects (scalars, vectors, tensors) with well-defined units.
+We will also imagine that the user knows all the units; there is no sense in which the method we propose can learn them.
+There are many valuable future problems in the space of dimensional analysis outside the scope of this work.
+
+\paragraph{Our contributions:}
+HOGG WRITE HERE.
+
+\section{Units and dimensions}
+
+Almost every physical quantity (any position, velocity, or energy, say) has units (inches, kilometers per hour, or BTUs, say).
+In the physical sciences we are advised to use SI units (\cite{si}), which include meters ($\m$), meters per second ($\m\,\s^{-1}$), and Joules ($\J$), for example.
+Any energy can be converted to $\J$, any velocity can be converted to $\m\,\s^{-1}$, and so on, according to known conversion factors.
+There are dimensionless quantities in physics too, such as Reynolds numbers, or concentrations, but these can also be thought of as having units of unity (or percent or parts per million or so on).
+
+Abstracting slightly further, all the SI units are built on \emph{base units} of kilograms ($\kg$), meters ($\m$), seconds ($\s$), kelvin ($\K$), amperes ($\A$), and a few others (such as moles).
+That is, it is possible to convert any SI unit into powers of the base units.
+For example, a pascal ($\Pa$) is a $\kg\,\m^{-1}\,\s^{-2}$, and a volt ($\V$) is a $\kg\,\m^{2}\,\s^{-3}\,\A^{-1}$.
+That is, the units of any physical quantity (in any unit system) can be converted to powers of the SI base units.
+
+Abstracting even further, there is a concept of dimensions, which is the generalization of units, or the thing that is unchanged when you change the units of something.
+Two energies, even if measured in different unit systems, both have the \emph{dimensions} of energy.
+In this sense, there are not just the \emph{base units} of $\kg$, $\m$, $\s$, $\K$, $\A$, and so on; there are also the \emph{base dimensions} of mass, length, time, temperature, current, and so on.
+That is, any energy can be expressed as a product of a mass times two powers of a length divided by two powers of a time.
+Or, said another way, an energy can be divided by a mass, divided by two powers of length, and multiplied by two powers of time to deliver a dimensionless quantity.
+It is always possible to create, from any dimensioned quantity, a dimensionless quantity by multiplying and dividing (carefully chosen) powers of quantities with the base dimensions.
+
+Physical law (and indeed all general relationships among things) obey dimensional rules (like an algebra but not precisely an algebra):
+Only objects with the same dimensions can be added or subtracted.
+And when two objects are multiplied (or divided), the resulting quantity has the product (or ratio) of the dimensions of the two input objects.
+These rules are powerful!
+For example, we used them to derive, in the first paragraph of this paper, the dependence on mass and length of the period of a simple pendulum, without (directly) employing any equations or physical model.
+
+Not only is it the case that physical quantities that are added have to have the same \emph{dimensions}.
+In detail, the \emph{numerical} addition of the quantities must be performed only after they have been converted to the same \emph{units} as well.
+And the products (or ratios) of quantities of units will have the products (or ratios) of the input-quantity units.
+
+Because dimensions and units obey arithmetic rules, there are also concepts of linear independence and so on, in both the units space and the dimensions space.
+These concepts are out of scope here.
+But one thing that is not out of scope is the concept of closure, or consistency of units.
+This relates to having well-defined and consistent base units:
+For example, imagine having a mass $M$ measured in grams, a length $L$ measured in inches, a force $F$ measured in newtons, and a speed $V$ measured in kilometers per hour. These quantities have inconsistent base units, in the sense that the time unit inside the force unit is not the same as the time unit inside the speed unit.
+Naive multiplication of different combinations of these quantities will produce outputs with incommensurate units.
+They have to be converted to consistent units prior to any arithmetic manipulations.
+In what follows, we will assume (and later \emph{require}) that the inputs and outputs of any model or problem under consideration has been converted into consistent units, for example the explicitly consistent SI system (\cite{si}).
+HOGG: DOES THIS KIND OF CONSISTENCY HAVE AN EXPLICIT NAME IN PHYSICS?
+
+Sometimes physicists like to work with dimensionless problems in which nothing in the problem has dimensions.
+How is this achieved?
+This is only possible in contexts in which there are unique natural or fundamental scales in the problem, and these scales have (or can be combined to have) dimensions of the relevant base dimensions.
+For example, in cosmological problems, the speed of light, the gravitational constant, and the Hubble constant can be combined to deliver a well-defined fundamental mass scale, length scale, and time scale.
+Once these are defined, many dimensioned quantities can be made dimensionless by scaling out these fundamental scales.
+This operation---of making a dimensioned problem dimensionless by using fundamental scales---is the inspiration for the present work.
+
+Although we are coming at this problem from the perspective of physics and chemistry, there are many other domains that have units of relevance, implicitly or explicitly.
+One good example in economic and financial contexts is money, which can be measured (say) in EUR or USD.
+There are also scalings in the sense that---in a business context, say---there can be numbers that are per-customer, and numbers that are per-employee, and numbers that apply to the enterprise as a whole.
+These are also subject to the kinds of scalings that we will find and use.
+These kinds of considerations suggest that there will be generalizations of what's written here to domains way outside the natural sciences.
+
+\section{Dimensionless machine learning}
+
+In what follows, we will assume and require that the problem (classification or regression, say) of interest has the following properties:
+\begin{description}
+    \item[everything has units:] All the inputs to the problem, or features in the context of regression, and all the outputs of the problem, or labels in the context of regression, have well-defined units that are known (of course some may be dimensionless).
+    \item[self-consistent unit system:] All the units used in the inputs are in a consistent unit system, or implemented in a units-aware numerical system that permits seamless multiplication and addition of objects by methods that are self-consistent, in terms of dimensions and units.
+    \item[known base-dimension exponents:] For each feature and for each label, the dimensions of that object can be described in terms of products of powers of a small set of $L$ base dimensions (mass, length, time, temperature, current, and so on), and these powers are all known (and correct).
+    \item[rectangular form:] Every training-set and test-set object has $J$ input features of the same kinds and units, and every training-set object has $R$ labels of the same kinds and units.
+    \item[complete inputs:] Dimensional scalings and dimensional analyses are only appropriate and correct when \emph{every dimensioned input} is included. This means that some fundamental constants ($G$, $c$, $\hbar$, and so on) will have to be included as features in some problems, depending on what physics is expected to arise.
+\end{description}
+
+Our proposal is to add to any existing machine-learning regression method two steps, a scaling step and an unscaling step.
+In the \emph{scaling step} we find data-driven base-dimension scales such that when we divide each dimensioned input feature by the relevant powers of the relevant base-dimension scales, we get input features that are on the order of unity, and dimensionless.
+We then use these scales to make all input features and all labels explicitly dimensionless.
+After the scaling step, the machine-learning method (about which we are almost completely agnostic) is trained as per usual in the \emph{learning step}.
+The only difference from standard practice is that the input to the learning will be the dimensionless features and dimensionless labels made in the scaling step.
+In the \emph{unscaling step} we multiply the dimensionless labels predicted by the trained machine-learning method by the relevant powers of the relevant base-dimension scales found in the scaling step to produce proper, dimensioned label predictions in the correct units.
+
+There are other approaches to this problem that ought to work; this is by no means the only solution.
+For example, there are straightforward data-augmentation solutions.
+We will discuss these further in \secref{sec:discussion}.
+
+\paragraph{problem setup:} 
+We have $N$ training-set objects $n$ ($1\leq n\leq N$), each of which has a set (or ordered list or blob) of $J$ features $x_{nj}$ ($1\leq j\leq J$), and a set of $R$ labels $y_{nr}$ ($1\leq r\leq R$).
+Some of the inputs $x_{nj}$ will be scalars, some will be vector and tensor components, and same for the labels $y_{nr}$.
+We will come back to the symmetries induced by the geometry of these things later.
+Each of the features $x_{nj}$ and labels $y_{nr}$ has a numerical value with units, and also (more abstractly) dimensions.
+That is, each feature $x_{nj}$ and each label $y_{nr}$ can be written as a dimensionless number times some powers of dimensioned objects:
+\begin{align}\label{eq:xnj}
+    x_{nj} &= \xi_{nj} \,\prod_{s=1}^S b_{ns}^{\,a_{js}} \\
+    y_{nr} &= \eta_{nr}\,\prod_{s=1}^S b_{ns}^{\,a_{rs}} ~,
+\end{align}
+where $\xi_{nj}$ and $\eta_{nr}$ are dimensionless numbers, the product is over base dimensions (mass, length, and so on), the $b_{ns}$ are $S$ dimensioned scales for object $n$ in the base units, and the $a_{js}$ and $a_{rs}$ are exponents (usually integers or half-integers in most applications).
+For an example, if $x_{nj}$ is an energy, and $b_{n1}, b_{n2}, b_{n3}, b_{n4}$ are a mass scale, a length scale, a time scale, and a temperature scale, then $[a_{j1}, a_{j2}, a_{j3}, a_{j4}] = [1, 2, -2, 0]$.
+
+\paragraph{scaling step:}
+In the scaling step, we are going to learn (with a closed-form optimization) a set of scales $b_{ns}$ that are appropriate given the features $x_{nj}$ of each input training-data object $n$.
+We begin by grouping the features $j$ into $U$ groups $\setS_u$ by their units, such that each of the $U$ groups contains all of the features that have the same units, and there are as many groups as their are unique units.
+Note that the number of groups $U$ could be larger or smaller than the number $S$ of base units, depending on how many different combinations of the base units appear among the features. However, we hope and prefer to find $U>S$, for reasons that will become obvious below.
+So for instance, if some of the features are velocities, some are energies, some are spring constants, and some are masses, we would have $U=4$ groups and $S=3$ base dimensions.
+
+Once we have found the $U$ groups $\setS_u$, we construct super-features $z_{nu}$ from the features $x_{nj}$ by
+\begin{align}\label{eq:znu}
+    z_{nu} &= \sqrt{\frac{1}{|\setS_u|}\,\sum_{j\in\setS_u} x_{nj}^2} ~,
+\end{align}
+where $|\setS_u|$ denotes the number of features $j$ in group $\setS_u$.
+Since the super-features $z_{nu}$, by construction, are non-negative and have well-defined units, they can be written as non-negative dimensionless numbers $\zeta_{nu}$ times powers of the base-dimension scales $b_{ns}$
+\begin{align}
+    z_{nu} &= \zeta_{nu}\,\prod_{s=1}^S b_{ns}^{\,a_{us}} \\
+    \ln z_{nu} &= \ln \zeta_{nu} + \sum_{s=1}^S a_{us}\,\ln b_{ns} ~,
+\end{align}
+where the $a_{us}$ are dimensional exponents (usually integers or half-integers in most contexts).
+
+If we have good scales $b_{ns}$, the $\ln\zeta_{nu}$ should all be clustered around zero.
+That suggests a least-squares-like optimization.
+We can perform this optimization as follows:
+\begin{enumerate}
+  \item For data example $n$, construct $U$ super-features $z_{nu}$ from the features $x_{nj}$ that are part of data example $n$, according to \eqref{eq:znu}.
+  \item Construct a $U\times 1$ matrix $Z_n$ that contains the logarithms $\ln z_{nu}$ of each of the $U$ super-features $z_{nu}$ from training-set object $n$.
+We will address the issue of (precisely) zero-valued super-features below.
+  \item Construct a (universal, since the data are rectangular) $U\times S$ design matrix $A$ that contains the exponents $a_{us}$.
+  \item Obtain an $S\times 1$ matrix $B_n$ by
+  \begin{align}\label{eq:Bn}
+      B_n &\leftarrow (A^\top A)^{-1}\,A^\top Z_n ~.
+  \end{align}
+\item The ``best'' logarithmic dimensional scales $\ln b_{ns}$ will be the $S$ entries of the output matrix $B_n$; that is:
+\begin{align}
+    b_{ns} &\leftarrow \exp([B_n]_s) ~,
+\end{align}
+where the $[B_n]_s$ notation takes the $s$th element of the column matrix $B_n$.
+\end{enumerate}
+
+Occasionally it is possible for one of the super-features $z_{nu}$ to precisely vanish (the $z_{nu}$ are non-negative but not necessarily positive).
+If this happens, the investigator has two choices:
+Either this single training point $n$ should be discarded as not usable, or else this units group $\setS_u$ should be discarded as not usable.
+That is, no vanishing super-features can be used, but every training point $n$ must be treated identically for the units scaling to be implemented exactly.
+That means that any encounter with a vanishing $z_{nu}$ means either that the group $u$ or the object $n$ must be deleted from the data.
+It must be the whole ``row'' or the whole ``column'' to keep the data rectangular (see assumptions above).
+Which is better---deleting $n$ or deleting $u$---depends on the frequency with which zeros arise, the number $U$ of unique groups $\setS_u$, and the size $N$ of the training set. In general if $U$ is close to $S$ you will want to drop the training-set object $n$ not the group $u$.
+
+It is possible of course that the number $U$ of unique groups can be smaller than the number $S$ of base dimensions.
+In this case, equation \eqref{eq:Bn} is singular and has no unique solution.
+It makes sense to find the min-norm solution, or regularize with a vanishing regularizer like
+\begin{align}\label{eq:Bn}
+    B_n &\leftarrow \lim_{\lambda\rightarrow 0^+} (A^\top A + \lambda\,I)^{-1}\,A^\top Z_n ~,
+\end{align}
+where $\lambda$ is a scalar and $I$ is the relevant identity matrix.
+ 
+Once we find the scales $b_{ns}$, we augment or replace the training-set features $x_{nj}$ and labels $y_{nr}$ with dimensionless features $\xi_{nj}$ and dimensionless labels $\eta_{nr}$ by
+\begin{align}
+    \xi_{nj}  &\leftarrow x_{nj}\,\prod_{s=1}^S b_{ns}^{\,-a_{js}} \\
+    \eta_{nr} &\leftarrow y_{nr}\,\prod_{s=1}^S b_{ns}^{\,-a_{rs}} ~.
+\end{align}
+
+One note to end this scaling-step discussion is that we could have made the super-features $z_{nu}$ in many different ways other than \eqref{eq:znu}; we could have used the mean, median, softmax, or max of the norms of the features $|x_{nj}|$ in the group $\setS_u$.
+It is a matter of empirical study which is best in different contexts.
+
+\paragraph{learning step:}
+In the learning step you train your machine-learning method using the $\xi_{nj}$ as your training-set features, and the $\eta_{nr}$ as your training-set labels, just as you would in any other context.
+That is, nothing changes about how you implement your machine-learning method, our proposal is just about a pre-processing of the inputs into dimensionless form.
+Whatever machine-learning method you choose will learn functions $f_r(\xi_{n1}, \xi_{n2}, \cdots, \xi_{nJ})$ that take in the $J$ dimensionless features $\xi_{nj}$ as inputs and output predictions $\hat{\eta}_{nr}$ for the dimensionless labels $\eta_{nr}$.
+
+HOGG: WHAT IS THE VOICE? Second-person? Or Third-person?
+
+\paragraph{unscaling step:}
+In the unscaling step, the idea is that you make predictions for dimensioned objects by making dimensionless predictions and then scaling them back using the scalings $b_{n's}$.
+That is, when you analyze a test-set (or validation) example $n'$, and you want to predict its dimensioned label $y_{n'r}$, the procedure is as follows:
+\begin{enumerate}
+    \item Get super-features $z_{n'u}$ from the features $x_{n'j}$ and get the scales $b_{n's}$ from those super-features as above in the scaling step.
+    \item Scale the features $x_{n'j}$ into dimensionless features $\xi_{n'j}$, as above.
+    \item Apply machine-learned functions $f(\cdot)$ to dimensionless features to get dimensionless predictions $\hat{\eta}_{n'r}$.
+    \item Scale dimensionless predictions $\hat{\eta}_{n'r}$ into dimensioned label predictions $\hat{y}_{n'r}$ by
+    \begin{align}
+        \hat{y}_{n'r} = \hat{\eta}_{n'r}\,\prod_{s=1}^S b_{n's}^{\,a_{rs}}
+    \end{align}
+    where the HOGG
+\end{enumerate}
+
+HOGG: WHAT HAPPENS IF WE FIND BASE QUANTITIES IN THE labels that don't exist anywhere in the features? I think we can just normalize arbitrarily there, but let's think about that one.
+
+\paragraph{model-building considerations:}
+HOGG now discuss the case of the scalars model that we love so much.
+
+\section{Numerical experiments}
+
+\paragraph{mass on a spring:} Maybe, before we do the springy pendula, we might try a one-dimensional problem, like the one-dimensional mass on a linear spring, which exhibits simple harmonic oscillations. Some relations are:
+\begin{align}
+    H &= \frac{1}{2\,m}\,p^2 + \frac{k}{2}\,q^2 \\
+    T &= 2\pi\,\sqrt{\frac{m}{k}} \\
+    q_0 &= \sqrt{q^2 + \frac{1}{k\,m}\,p^2} ~,
+\end{align}
+where $H$ is the total mechanical energy, $m$ is the mass of a block on a frictionless horizontal track, $k$ is the spring constant of a spring attaching the block to a wall, $p$ is the one-dimensional momentum at some moment in time, $q$ is the one-dimensional displacement at that same moment, $T$ is the period of oscillation, and $q_0$ is the amplitude of the oscillation.
+The regression task is to take the parameters and state of the system and predict or estimate the total energy, the period, and the amplitude.
+That is, the input features are $m,k,p,q$ (two scalars and two one-dimensional vectors) and the labels are $H,T,q_0$ (three scalars).
+
+\paragraph{springy single pendulum:} Maybe, before we do a full, chaotic double springy pendulum, we should do a regular (in the KAM sense \cite{kam}) springy single pendulum. The dynamics are:
+\begin{align}
+    H &= \frac{1}{2\,m}\,p^\top p + \frac{k}{2}\,(\sqrt{q^\top q} - \ell)^2 - m\,g^\top q \\
+    F = \frac{\dd p}{\dd t} &= -\left.\frac{\partial H}{\partial q}\right|_p = -k\,q + k\,\ell\,\frac{q}{\sqrt{q^\top q}} + m\,g \\
+    v = \frac{\dd q}{\dd t} &= +\left.\frac{\partial H}{\partial p}\right|_q = \frac{p}{m} ~,
+\end{align}
+where $H$ is the total mechanical energy, $m$ is the scalar mass of a bob on a spring hanging from a free pivot in gravity, $p$ is the vector momentum of the bob in the rest frame of the pivot, $q$ is the vector position of the bob relative to the pivot, $k$ is the scalar spring constant, $\ell$ is the scalar natural length of the spring, $g$ is the vector acceleration due to gravity, $F$ is the force, $t$ is time, and $v$ is velocity.
+The regression task is to take the parameters and state of the system and predict or estimate the total energy, the acceleration, and the velocity.
+That is, the input features are $m,k,\ell,g,p,q$ (three scalars and three vectors) and the labels are $H,F,v$ (one scalar and two vectors).
+
+\paragraph{springy double pendulum:}
+HOGG: Physics equations.
+
+HOGG: Summarize WY results and architecture.
+
+HOGG: Wrap WY methods with this structure.
+
+HOGG: Improve the training set to diversify ks, ls, etc.
+
+HOGG: Show results.
+
+\section{Discussion}\label{sec:discussion}
+
+What have we learned?
+
+Maybe this only works well when the number $J$ of features is small, or the number $U$ of unique units is small?
+
+Should we comment on symbolic regression, and/or is that what we did?
+
+What are some of the disadvantages or costs of this?
+
+Could we have done this with data augmentation? YES WE COULD; and that would have been dumb. But it would work.
+
+What new opportunities now arise? Maybe also mention somewhere here the non-physics units like money.
+
+\paragraph{Acknowledgements:}
+It is a pleasure to thank
+Ben Blum-Smith (NYU),
+Bernhard Sch\"olkopf (MPI-IS),
+and the Astronomical Data Group at the Flatiron Institute for valuable discussions.
+SOLE AND HOGG: GRANT NUMBERS HERE.
+
+\end{document}
