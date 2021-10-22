@@ -3,13 +3,17 @@
 % - One sentence per text-editor line, please (for diffing),
 % - Use \secref and \eqref and so on, don't roll your own.
 
-\documentclass{article}
+\documentclass[12pt, letterpaper]{article}
 \usepackage[utf8]{inputenc}
+\usepackage[letterpaper]{geometry}
 \usepackage{amsmath}
 \usepackage{dutchcal}
 
-\addtolength{\topmargin}{-0.85in}
-\addtolength{\textheight}{2.50in}
+\setlength{\topmargin}{-0.40in}
+\setlength{\textheight}{9.10in}
+\setlength{\textwidth}{5.50in}
+\setlength{\oddsidemargin}{3.25in} % LaTeX oddities
+\addtolength{\oddsidemargin}{-0.5\textwidth}
 \linespread{1.08} % trust in Hogg
 \pagestyle{myheadings}
 \markboth{}{Hogg, Villar, others / Dimensionless machine learning}
@@ -43,9 +47,9 @@ Improving generalization through units-aware scalings.}
 \newcommand{\Pa}{\unit{Pa}}
 \newcommand{\V}{\unit{V}}
 
-\frenchspacing\raggedbottom\sloppy\sloppypar\thispagestyle{empty}
+\frenchspacing\raggedbottom\sloppy\sloppypar
 \begin{document}
-\maketitle
+\maketitle\thispagestyle{empty}
 
 \begin{abstract}\noindent
     Physical laws obey dimensional relationships:
@@ -97,7 +101,7 @@ If the acceleration due to gravity is implicitly treated as the same for all tra
 If the acceleration due to gravity \emph{is} included, then the problem becomes explicitly rotationally invariant.
 In our case, this means that things like fundamental constants (Newton's constant $G$, the speed of light $c$, Planck's constant $\hbar$, Boltzmann's constant $k$, and so on) might have to be included as features, if gravity, relativity, quantum effects, or thermodynamic properties (for example) are expected to arise in the problem.
 
-This work lives in a broader context in machine learning of including, encoding, or learning symmetries, invariances, and equivariances in machine-learning problems.
+This work lives in a broader context in machine learning of including, encoding, or learning exact symmetries, invariances, and equivariances in machine-learning problems.
 Examples include...HOGG QUICK LIT REVIEW.
 
 In what follows, we are imagining a machine-learning setting in which both the inputs and the outputs to the machine-learning method are objects (scalars, vectors, tensors) with well-defined units.
@@ -242,7 +246,7 @@ Which is better---deleting $n$ or deleting $u$---depends on the frequency with w
 It is possible of course that the number $U$ of unique groups can be smaller than the number $S$ of base dimensions.
 In this case, equation \eqref{eq:Bn} is singular and has no unique solution.
 It makes sense to find the min-norm solution, or regularize with a vanishing regularizer like
-\begin{align}\label{eq:Bn}
+\begin{align}
     B_n &\leftarrow \lim_{\lambda\rightarrow 0^+} (A^\top A + \lambda\,I)^{-1}\,A^\top Z_n ~,
 \end{align}
 where $\lambda$ is a scalar and $I$ is the relevant identity matrix.
@@ -300,7 +304,7 @@ That is, the input features are $m,k,p,q$ (two scalars and two one-dimensional v
     F = \frac{\dd p}{\dd t} &= -\left.\frac{\partial H}{\partial q}\right|_p = -k\,q + k\,\ell\,\frac{q}{\sqrt{q^\top q}} + m\,g \\
     v = \frac{\dd q}{\dd t} &= +\left.\frac{\partial H}{\partial p}\right|_q = \frac{p}{m} ~,
 \end{align}
-where $H$ is the total mechanical energy, $m$ is the scalar mass of a bob on a spring hanging from a free pivot in gravity, $p$ is the vector momentum of the bob in the rest frame of the pivot, $q$ is the vector position of the bob relative to the pivot, $k$ is the scalar spring constant, $\ell$ is the scalar natural length of the spring, $g$ is the vector acceleration due to gravity, $F$ is the force, $t$ is time, and $v$ is velocity.
+where $H$ is the total mechanical energy, $m$ is the scalar mass of a bob on a spring hanging from a free pivot in gravity, $p$ is the vector momentum of the bob in the rest frame of the pivot, $p^\top p$ is the scalar product of $p$ with itself, $q$ is the vector position of the bob relative to the pivot, $k$ is the scalar spring constant, $\sqrt{q^\top q}$ is an unfortunate way of writing the magnitude $|q|$, $\ell$ is the scalar natural length of the spring, $g$ is the vector acceleration due to gravity, $F$ is the force, $t$ is time, and $v$ is velocity.
 The regression task is to take the parameters and state of the system and predict or estimate the total energy, the acceleration, and the velocity.
 That is, the input features are $m,k,\ell,g,p,q$ (three scalars and three vectors) and the labels are $H,F,v$ (one scalar and two vectors).
 
