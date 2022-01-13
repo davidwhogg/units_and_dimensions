@@ -8,6 +8,7 @@
 \usepackage[letterpaper]{geometry}
 \usepackage{amsmath}
 \usepackage{dutchcal}
+\usepackage{xcolor}
 
 \setlength{\topmargin}{-0.40in}
 \setlength{\textheight}{9.10in}
@@ -20,7 +21,7 @@
 
 \title{\bfseries
 Dimensionless machine learning:\\
-Improving generalization through units-aware scalings.}
+Improving generalization through units equivariance.}
 \author{Hogg, Villar, others}
 \date{September 2021}
 
@@ -56,8 +57,8 @@ Improving generalization through units-aware scalings.}
     Quantities have well-defined units, and the units of terms to be added or subtracted must agree.
     General machine-learning methods do not make use of these important relationships.
     Here we propose and demonstrate a simple method for taking account of the units of the inputs and outputs of any machine-learning method.
-    We demonstrate with a simple physics problem that finding and applying units scalings to standard machine-learning methods can improve accuracy and generalization.
-    The methods we propose can be used with almost any pre-existing machine-learning method at essentially no additional computational cost.
+    \textcolor{red}{HOGG THIS SENTENCE IS WRONG: We demonstrate with a simple physics problem that finding and applying units scalings to standard machine-learning methods can improve accuracy and generalization. ALSO: Say things about reducing model capacity at fixed complexity and regression.}
+    The methods we propose can be used with almost any pre-existing machine-learning or traditional regression method at essentially no additional computational cost.
     It does, however, put additional requirements on the user or investigator, in terms of encoding the units of all inputs and outputs.
 \end{abstract}
 
@@ -81,7 +82,7 @@ With what is developed here, we can make these scalars dimensionless before they
 In both the scalars project and this one on units, the fundamental approach is to transform the features into invariant forms before they are used to train the machine-learning method, and then to un-transform label predictions at the output or at test time.
 These transformation solutions to symmetry-respecting machine learning are simple to implement and perform extremely well \cite{yao}.
 
-The units scalings we propose here are superficially similar to the preconditioning or normalizations of input data that are common in machine-learning methods at the present day.
+HOGG: THIS PARAGRAPH IS NOW WRONG: The units scalings we propose here are superficially similar to the preconditioning or normalizations of input data that are common in machine-learning methods at the present day.
 But they are different in two absolutely critical respects.
 The first is that the scalings we propose are rigidly required to obey closure relationships that are dimensionally correct or consistent from a units perspective.
 The second is that we \emph{undo at output} the scalings that we put in at input.
@@ -95,7 +96,7 @@ There are two kinds of burdens on the investigator that a proper use of units re
 These burdens are analogous to the kinds of burdens on the investigator that arise when, for example, rotation symmetries are enforced:
 The first burden we will place on the investigator is that every input to the problem (every feature and label in the training and test sets) must have known dimensions and be provided in a self-consistent system of units.
 This is analogous to the requirement, in rotation-symmetric problems, that every input to the problem (every feature and label) must have its transformation properties with respect to rotations specified (scalars are different from vectors, which are different from tensors).
-The second burden we will place on the investigator is that every dimensioned input or parameter that can matter to the problem must be included as a feature.
+The second burden we will place on the investigator is that every dimensioned input or parameter that can matter to the problem must be included as an input feature.
 The analogy with symmetries is that, for example, the physical problem of a pendulum swinging is not fully rotationally invariant if, say, the acceleration due to gravity $g$ is not included as an input.\footnote{HOGG: Comment on the point that Finzi \cite{finzi} calls the double pendulum O(2) while we \cite{yao} call it O(3)?}
 If the acceleration due to gravity is implicitly treated as the same for all training data and not provided as an input feature to the regression problem, then the problem is not rotationally invariant (``down'' is different from ``sideways'').
 If the acceleration due to gravity \emph{is} included, then the problem becomes explicitly rotationally invariant.
@@ -150,6 +151,7 @@ They have to be converted to consistent units prior to any arithmetic manipulati
 In what follows, we will assume (and later \emph{require}) that the inputs and outputs of any model or problem under consideration has been converted into consistent units, for example the explicitly consistent SI system (\cite{si}).
 HOGG: DOES THIS KIND OF CONSISTENCY HAVE AN EXPLICIT NAME IN PHYSICS?
 
+HOGG: RE-WRITE THIS PARAGRAPH TO CENTER THE BUCKINGHAM PI THEOREM.
 Sometimes physicists like to work with dimensionless problems in which nothing in the problem has dimensions.
 How is this achieved?
 This is only possible in contexts in which there are unique natural or fundamental scales in the problem, and these scales have (or can be combined to have) dimensions of the relevant base dimensions.
@@ -164,19 +166,108 @@ There are also scalings in the sense that---in a business context, say---there c
 These are also subject to the kinds of scalings that we will find and use.
 These kinds of considerations suggest that there will be generalizations of what's written here to domains way outside the natural sciences.
 
-\section{Dimensionless machine learning}
+HOGG: Same dimensions may have different base units in real-world (see e.g.: depth of surface water). There may be qualitatively different features (e.g.: parameters of ODEs vs initial conditions of ODEs). Implementing the procedures that are described in this paper may require thought. It is not automatic. 
 
-In what follows, we will assume and require that the problem (classification or regression, say) of interest has the following properties:
+\section{Units-equivariant regression}\label{sec:method}
+%% NOTE: USE labels and inputs and features consistently and deliberately.
+
+In what follows, we will assume and require that the problem of interest has the following properties:
 \begin{description}
-    \item[everything has units:] All the inputs to the problem, or features in the context of regression, and all the outputs of the problem, or labels in the context of regression, have well-defined units that are known (of course some may be dimensionless).
+    \item[regression setting:] There is a training set, each element of which has a set of inputs (which could be a blob of scalars and vectors, say) and a set of labels (which could also be a blob of scalars and vectors). The task is to learn a function of the inputs that predicts well the labels (on, say, held-out data).
+    \item[everything has units:] All the inputs to the problem, and all the labels, have well-defined units that are known (of course some may be dimensionless).
     \item[self-consistent unit system:] All the units used in the inputs are in a consistent unit system, or implemented in a units-aware numerical system that permits seamless multiplication and addition of objects by methods that are self-consistent, in terms of dimensions and units.
-    \item[known base-dimension exponents:] For each feature and for each label, the dimensions of that object can be described in terms of products of powers of a small set of $L$ base dimensions (mass, length, time, temperature, current, and so on), and these powers are all known (and correct).
-    \item[rectangular form:] Every training-set and test-set object has $J$ input features of the same kinds and units, and every training-set object has $R$ labels of the same kinds and units.
-    \item[complete inputs:] Dimensional scalings and dimensional analyses are only appropriate and correct when \emph{every dimensioned input} is included. This means that some fundamental constants ($G$, $c$, $\hbar$, and so on) will have to be included as features in some problems, depending on what physics is expected to arise.
+    \item[known base-dimension exponents:] For each input and for each label, the dimensions of that object can be described in terms of products of powers of a small set of $L$ base dimensions (mass, length, time, temperature, current, and so on), and these powers are all known (and correct).
+    \item[rectangular form:] HOGG THIS IS AMBIGUOUS: Every training-set and test-set object has $J$ inputs of the same kinds and units, and every training-set object has $R$ labels of the same kinds and units.
+    \item[complete inputs:] Dimensional scalings and dimensional analyses are only appropriate and correct when \emph{every dimensioned input} is included. This means that some fundamental constants ($G$, $c$, $\hbar$, and so on) will have to be included as inputs in some problems, depending on what physics is expected to arise.
 \end{description}
 
+In analogy to our work on group equivariance \cite{villar, yao}, we propose to create dimensionless features from the inputs.
+HOGG: for each label, also make dimensioned features from the inputs that share that label's dimensions.
+HOGG: the regression be structured to that it involves (possibly nonlinear) functions of the dimensionless features times the dimensioned features.
+
+SOLE: How do we find the dimensionless features? It is the basis of a lattice.
+
+SOLE: How could we find ``all'' the dimensionless features?
+
+SOLE: How do we find a dimensioned feature corresponding to a particular label?
+
+SOLE: How could we find ``all'' the dimensioned features?
+
+SOLE: How do we make up polynomials, and how much does units-equivariance help us? Might be a simple scaling of degree and dimensionalities of lattices?
+
+SOLE: How would we structure a deep learning method with all this?
+
+SOLE: Implementation notes and details.
+
+\section{Numerical experiments}
+
+\paragraph{mass on a spring:} Maybe, before we do the springy pendula, we might try a one-dimensional problem, like the one-dimensional mass on a linear spring, which exhibits simple harmonic oscillations. Some relations are:
+\begin{align}
+    H &= \frac{1}{2\,m}\,p^2 + \frac{k}{2}\,q^2 \\
+    T &= 2\pi\,\sqrt{\frac{m}{k}} \\
+    q_0 &= \sqrt{q^2 + \frac{1}{k\,m}\,p^2} ~,
+\end{align}
+where $H$ is the total mechanical energy, $m$ is the mass of a block on a frictionless horizontal track, $k$ is the spring constant of a spring attaching the block to a wall, $p$ is the one-dimensional momentum at some moment in time, $q$ is the one-dimensional displacement at that same moment, $T$ is the period of oscillation, and $q_0$ is the amplitude of the oscillation.
+The regression task is to take the parameters and state of the system and predict or estimate the total energy, the period, and the amplitude.
+That is, the inputs are $m,k,p,q$ (two scalars and two one-dimensional vectors) and the labels are $H,T,q_0$ (three scalars).
+
+\paragraph{springy single pendulum:} Maybe, before we do a full, chaotic double springy pendulum, we should do a regular (in the KAM sense \cite{kam}) springy single pendulum. The dynamics are:
+\begin{align}
+    H &= \frac{1}{2\,m}\,p^\top p + \frac{k}{2}\,(\sqrt{q^\top q} - \ell)^2 - m\,g^\top q \\
+    F = \frac{\dd p}{\dd t} &= -\left.\frac{\partial H}{\partial q}\right|_p = -k\,q + k\,\ell\,\frac{q}{\sqrt{q^\top q}} + m\,g \\
+    v = \frac{\dd q}{\dd t} &= +\left.\frac{\partial H}{\partial p}\right|_q = \frac{p}{m} ~,
+\end{align}
+where $H$ is the total mechanical energy, $m$ is the scalar mass of a bob on a spring hanging from a free pivot in gravity, $p$ is the vector momentum of the bob in the rest frame of the pivot, $p^\top p$ is the scalar product of $p$ with itself, $q$ is the vector position of the bob relative to the pivot, $k$ is the scalar spring constant, $\sqrt{q^\top q}$ is an unfortunate way of writing the magnitude $|q|$, $\ell$ is the scalar natural length of the spring, $g$ is the vector acceleration due to gravity, $F$ is the force, $t$ is time, and $v$ is velocity.
+The regression task is to take the parameters and state of the system and predict or estimate the total energy, the acceleration, and the velocity.
+That is, the inputs are $m,k,\ell,g,p,q$ (three scalars and three vectors) and the labels are $H,F,v$ (one scalar\footnote{The energy is not a scalar in relativistic contexts, but it is a scalar in Newtonian contexts.} and two vectors).
+
+\paragraph{springy double pendulum:}
+HOGG: Physics equations.
+
+HOGG: Summarize WY results and architecture.
+
+HOGG: Wrap WY methods with this structure.
+
+HOGG: Improve the training set to diversify ks, ls, etc.
+
+HOGG: Show results.
+
+\paragraph{vegetation models:} https://arxiv.org/pdf/2101.07049.pdf
+
+
+
+\section{Discussion}\label{sec:discussion}
+
+What have we learned?
+
+How does this fit into a bigger picture of equivariance?
+
+How does this connect to symbolic regression? Mention the creation of general relativity \cite{norton}.
+
+Maybe this only works well when the number $J$ of inputs is small, or the number $U$ of unique units is small?
+
+Should we comment on symbolic regression, and/or is that what we did?
+
+What are some of the disadvantages or costs of this?
+
+Could we have done this with data augmentation? YES WE COULD; and that would have been dumb. But it would work.
+
+What new opportunities now arise? Maybe also mention somewhere here the non-physics units like money.
+
+\paragraph{Acknowledgements:}
+It is a pleasure to thank
+Ben Blum-Smith (NYU),
+Bernhard Sch\"olkopf (MPI-IS),
+and the Astronomical Data Group at the Flatiron Institute for valuable discussions.
+SOLE AND HOGG: GRANT NUMBERS HERE.
+
+\bibliographystyle{unsrt}
+\bibliography{units}
+
+\appendix
+\section{Deprecated method from the deep past}
 Our proposal is to add to any existing machine-learning regression method two steps, a scaling step and an unscaling step.
-In the \emph{scaling step} we find data-driven base-dimension scales such that when we divide each dimensioned input feature by the relevant powers of the relevant base-dimension scales, we get input features that are on the order of unity, and dimensionless.
+In the \emph{scaling step} we find data-driven base-dimension scales such that when we divide each dimensioned input by the relevant powers of the relevant base-dimension scales, we get input features that are on the order of unity, and dimensionless.
 We then use these scales to make all input features and all labels explicitly dimensionless.
 After the scaling step, the machine-learning method (about which we are almost completely agnostic) is trained as per usual in the \emph{learning step}.
 The only difference from standard practice is that the input to the learning will be the dimensionless features and dimensionless labels made in the scaling step.
@@ -185,6 +276,10 @@ In the \emph{unscaling step} we multiply the dimensionless labels predicted by t
 There are other approaches to this problem that ought to work; this is by no means the only solution.
 For example, there are straightforward data-augmentation solutions.
 We will discuss these further in \secref{sec:discussion}.
+
+HOGG Says: Also maybe a method that is similar to the equivariant function case in the scalars paper.
+That is, make all quantities that you can from the features that have the same units as the label; co-add those quantities after pre-multiplying by nonlinear functions of dimensionless inputs.
+I don't think this is more general than what we have here, but it might be better in pragmatic ways in some cases.
 
 \paragraph{problem setup:} 
 We have $N$ training-set objects $n$ ($1\leq n\leq N$), each of which has a set (or ordered list or blob) of $J$ features $x_{nj}$ ($1\leq j\leq J$), and a set of $R$ labels $y_{nr}$ ($1\leq r\leq R$).
@@ -286,59 +381,5 @@ HOGG: WHAT HAPPENS IF WE FIND BASE QUANTITIES IN THE labels that don't exist any
 
 \paragraph{model-building considerations:}
 HOGG now discuss the case of the scalars model that we love so much.
-
-\section{Numerical experiments}
-
-\paragraph{mass on a spring:} Maybe, before we do the springy pendula, we might try a one-dimensional problem, like the one-dimensional mass on a linear spring, which exhibits simple harmonic oscillations. Some relations are:
-\begin{align}
-    H &= \frac{1}{2\,m}\,p^2 + \frac{k}{2}\,q^2 \\
-    T &= 2\pi\,\sqrt{\frac{m}{k}} \\
-    q_0 &= \sqrt{q^2 + \frac{1}{k\,m}\,p^2} ~,
-\end{align}
-where $H$ is the total mechanical energy, $m$ is the mass of a block on a frictionless horizontal track, $k$ is the spring constant of a spring attaching the block to a wall, $p$ is the one-dimensional momentum at some moment in time, $q$ is the one-dimensional displacement at that same moment, $T$ is the period of oscillation, and $q_0$ is the amplitude of the oscillation.
-The regression task is to take the parameters and state of the system and predict or estimate the total energy, the period, and the amplitude.
-That is, the input features are $m,k,p,q$ (two scalars and two one-dimensional vectors) and the labels are $H,T,q_0$ (three scalars).
-
-\paragraph{springy single pendulum:} Maybe, before we do a full, chaotic double springy pendulum, we should do a regular (in the KAM sense \cite{kam}) springy single pendulum. The dynamics are:
-\begin{align}
-    H &= \frac{1}{2\,m}\,p^\top p + \frac{k}{2}\,(\sqrt{q^\top q} - \ell)^2 - m\,g^\top q \\
-    F = \frac{\dd p}{\dd t} &= -\left.\frac{\partial H}{\partial q}\right|_p = -k\,q + k\,\ell\,\frac{q}{\sqrt{q^\top q}} + m\,g \\
-    v = \frac{\dd q}{\dd t} &= +\left.\frac{\partial H}{\partial p}\right|_q = \frac{p}{m} ~,
-\end{align}
-where $H$ is the total mechanical energy, $m$ is the scalar mass of a bob on a spring hanging from a free pivot in gravity, $p$ is the vector momentum of the bob in the rest frame of the pivot, $p^\top p$ is the scalar product of $p$ with itself, $q$ is the vector position of the bob relative to the pivot, $k$ is the scalar spring constant, $\sqrt{q^\top q}$ is an unfortunate way of writing the magnitude $|q|$, $\ell$ is the scalar natural length of the spring, $g$ is the vector acceleration due to gravity, $F$ is the force, $t$ is time, and $v$ is velocity.
-The regression task is to take the parameters and state of the system and predict or estimate the total energy, the acceleration, and the velocity.
-That is, the input features are $m,k,\ell,g,p,q$ (three scalars and three vectors) and the labels are $H,F,v$ (one scalar and two vectors).
-
-\paragraph{springy double pendulum:}
-HOGG: Physics equations.
-
-HOGG: Summarize WY results and architecture.
-
-HOGG: Wrap WY methods with this structure.
-
-HOGG: Improve the training set to diversify ks, ls, etc.
-
-HOGG: Show results.
-
-\section{Discussion}\label{sec:discussion}
-
-What have we learned?
-
-Maybe this only works well when the number $J$ of features is small, or the number $U$ of unique units is small?
-
-Should we comment on symbolic regression, and/or is that what we did?
-
-What are some of the disadvantages or costs of this?
-
-Could we have done this with data augmentation? YES WE COULD; and that would have been dumb. But it would work.
-
-What new opportunities now arise? Maybe also mention somewhere here the non-physics units like money.
-
-\paragraph{Acknowledgements:}
-It is a pleasure to thank
-Ben Blum-Smith (NYU),
-Bernhard Sch\"olkopf (MPI-IS),
-and the Astronomical Data Group at the Flatiron Institute for valuable discussions.
-SOLE AND HOGG: GRANT NUMBERS HERE.
 
 \end{document}

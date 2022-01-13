@@ -1,0 +1,457 @@
+% This paper is part of the Units Equivariance project.
+% Copyright 2022 the authors.
+
+% to-do items
+% -----------
+% - fix symbol over-loading. currently, eg, \ell is an integer and also liters.
+% - fix the experimental setup for the vegetation
+% - integrate the pendulum
+% - do the chaotic springy double pendulum
+% - draft section 4
+
+\documentclass[nohyperref]{article}
+
+% Recommended, but optional, packages for figures and better typesetting:
+\usepackage{microtype}
+\usepackage{graphicx}
+\usepackage{subfigure}
+\usepackage{booktabs} % for professional tables
+
+% hyperref makes hyperlinks in the resulting PDF.
+% If your build breaks (sometimes temporarily if a hyperlink spans a page)
+% please comment out the following usepackage line and replace
+% \usepackage{icml2022} with \usepackage[nohyperref]{icml2022} above.
+\usepackage{hyperref}
+
+% Attempt to make hyperref and algorithmic work together better:
+\newcommand{\theHalgorithm}{\arabic{algorithm}}
+
+% Use the following line for the initial blind version submitted for review:
+\usepackage{icml2022}
+
+% If accepted, instead use the following line for the camera-ready submission:
+% \usepackage[accepted]{icml2022}
+
+% For theorems and such
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{mathtools}
+\usepackage{amsthm}
+
+% if you use cleveref..
+\usepackage[capitalize,noabbrev]{cleveref}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% THEOREMS
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{assumption}[theorem]{Assumption}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+% Todonotes is useful during development; simply uncomment the next line
+%    and comment out the line below the next line to turn off comments
+%\usepackage[disable,textsize=tiny]{todonotes}
+\usepackage[textsize=tiny]{todonotes}
+
+% The \icmltitle you define below is probably too long as a header.
+% Therefore, a short form for the running title is supplied here:
+\icmltitlerunning{Submission and Formatting Instructions for ICML 2022}
+
+% Custom author text macros
+\newcommand{\documentname}{\textsl{Article}}
+\newcommand{\sectionname}{Section}
+\newcommand{\secref}[1]{\sectionname~\ref{#1}}
+\newcommand{\project}[1]{\textsl{#1}}
+\newcommand{\astropy}{\project{astropy}}
+\newcommand{\figref}[1]{\figurename~\ref{#1}}
+\frenchspacing
+
+% Custom author math macros
+\newcommand{\dd}{\mathrm{d}}
+\newcommand{\set}[1]{\mathcal{#1}}
+\newcommand{\setS}{\set{S}}
+\newcommand{\unit}[1]{\mathrm{#1}}
+\newcommand{\kg}{\unit{kg}}
+\newcommand{\g}{\unit{g}}
+\newcommand{\m}{\unit{m}}
+\newcommand{\mm}{\unit{mm}}
+\renewcommand{\l}{\unit{\ell}}
+\newcommand{\s}{\unit{s}}
+\renewcommand{\d}{\unit{d}}
+\newcommand{\K}{\unit{K}}
+\newcommand{\A}{\unit{A}}
+\newcommand{\J}{\unit{J}}
+\newcommand{\N}{\unit{N}}
+\newcommand{\Pa}{\unit{Pa}}
+\newcommand{\V}{\unit{V}}
+\newcommand{\sxrightarrow}[2][]{%
+  \mathrel{\text{$\xrightarrow[#1]{#2}$}}%
+}
+
+\begin{document}
+
+\twocolumn[
+\icmltitle{Units equivariance for machine learning}
+
+% It is OKAY to include author information, even for blind
+% submissions: the style file will automatically remove it for you
+% unless you've provided the [accepted] option to the icml2022
+% package.
+
+% List of affiliations: The first argument should be a (short)
+% identifier you will use later to specify author affiliations
+% Academic affiliations should list Department, University, City, Region, Country
+% Industry affiliations should list Company, City, Region, Country
+
+% You can specify symbols, otherwise they are numbered in order.
+% Ideally, you should not use this facility. Affiliations will be numbered
+% in order of appearance and this is the preferred way.
+\icmlsetsymbol{equal}{*}
+
+\begin{icmlauthorlist}
+\icmlauthor{Firstname1 Lastname1}{equal,yyy}
+\icmlauthor{Firstname2 Lastname2}{equal,yyy,comp}
+\icmlauthor{Firstname3 Lastname3}{comp}
+\icmlauthor{Firstname4 Lastname4}{sch}
+\icmlauthor{Firstname5 Lastname5}{yyy}
+\icmlauthor{Firstname6 Lastname6}{sch,yyy,comp}
+\icmlauthor{Firstname7 Lastname7}{comp}
+%\icmlauthor{}{sch}
+\icmlauthor{Firstname8 Lastname8}{sch}
+\icmlauthor{Firstname8 Lastname8}{yyy,comp}
+%\icmlauthor{}{sch}
+%\icmlauthor{}{sch}
+\end{icmlauthorlist}
+
+\icmlaffiliation{yyy}{Department of XXX, University of YYY, Location, Country}
+\icmlaffiliation{comp}{Company Name, Location, Country}
+\icmlaffiliation{sch}{School of ZZZ, Institute of WWW, Location, Country}
+
+\icmlcorrespondingauthor{Firstname1 Lastname1}{first1.last1@xxx.edu}
+\icmlcorrespondingauthor{Firstname2 Lastname2}{first2.last2@www.uk}
+
+% You may provide any keywords that you
+% find helpful for describing your paper; these are used to populate
+% the "keywords" metadata in the PDF but will not be shown in the document
+\icmlkeywords{Machine Learning, ICML}
+
+\vskip 0.3in
+]
+
+% this must go after the closing bracket ] following \twocolumn[ ...
+
+% This command actually creates the footnote in the first column
+% listing the affiliations and the copyright notice.
+% The command takes one argument, which is text to display at the start of the footnote.
+% The \icmlEqualContribution command is standard text for equal contribution.
+% Remove it (just {}) if you do not need this facility.
+
+%\printAffiliationsAndNotice{}  % leave blank if no need to mention equal contribution
+\printAffiliationsAndNotice{\icmlEqualContribution} % otherwise use the standard text.
+
+% Hogg's illegal page numbers
+\setlength{\footskip}{6ex}\thispagestyle{plain}\pagestyle{plain}
+
+\begin{abstract}
+In this work we combine ideas from dimensional analysis and equivariant machine learning to provide an approach for units-equivariant machine learning. Units equivariance is the exact symmetry that follows from the requirement that relationships among measured quantities must have self-consistent units and obey dimensional scalings. Our approach is to construct a dimensionless version of the problem, using classic results from dimensional analysis, and then perform the learning task in the dimensionless space. This equivariance can be imposed on almost any contemporary machine learning methods, including those that are equivariant to rotations and other groups. We expect that this approach will be valuable in the contexts of symbolic regression and emulation. We discuss how to quantify how much we gain in terms of generalization error when we impose the exact units equivariance. We illustrate these ideas with a simple examples involving dynamical systems.
+\end{abstract}
+
+\section{Introduction}
+
+Equivariant machine learning is a thing. 
+
+Dimensional analysis is a thing.
+
+Dimensional symmetries are strict in physics.
+
+Non-linear functions can only be applied to dimensionless quantities.
+
+Emulators are systems that ought to strictly obey symmetries. Indeed, almost all emulator projects use data augmentation because they suck.
+
+Mention connections to symbolic regression.
+
+The work presented here builds on previous work we have done on machine learning for physics, in which we have shown that group-invariant scalars are the only inputs needed by a machine-learning method, if you want to learn group-equivariant functions of geometric objects (such as scalars, vectors, and tensors; \citealt{villar, yao}).
+With what is developed here, we can make these scalars dimensionless before they are used as inputs, and then scale the dimensions or units back in before the final outputs are delivered.
+In both the scalars project and this one on units, the fundamental approach is to transform the features into invariant forms before they are used to train the machine-learning method, and then to un-transform label predictions at the output or at test time.
+These transformation solutions to symmetry-respecting machine learning are simple to implement and perform extremely well \cite{yao}.
+
+\paragraph{Our contributions:}
+We bring units equivariance to machine learning for the first time.
+
+We demonstrate how to generate complete sets of dimensionless and dimensioned quantities.
+
+We deliver risk bounds for regression problems of some kind, show improvements with imposition of the symmetry. We find blah blah.
+
+We demonstrate with two simple numerical regression problems that the reduction of model capacity (at fixed complexity) delivered by the units equivariance leads to improvements in generalization error.
+
+
+\paragraph{Related work:}
+Dimensional analysis related work.
+
+A recent line of work develops mathematical theory to quantify the benefits of imposing symmetries and group equivariance in regression problems. The work \cite{} provides a computation of the excess risk in the context of linear regression, then extended to kernel regressions in \cite{}. The works \cite{} focus in quantifying the sample complexity gain for regressions with (finite) group-invariant kernels, while the work in \cite{} quantifies the benefits of data augmentation from a group theoretic point of view. 
+
+
+\section{Units and dimensional equivariance}
+
+Almost every physical quantity (any position, velocity, or energy, say) has units (inches, kilometers per hour, or BTUs, say).
+In the physical sciences we are advised to use SI units \cite{si}, which include meters ($\m$), meters per second ($\m\,\s^{-1}$), and Joules ($\J$), for example.
+Any energy can be converted to $\J$, any velocity can be converted to $\m\,\s^{-1}$, and so on, according to known conversion factors.
+There are dimensionless quantities in physics too, such as Reynolds numbers, or concentrations, but these can also be thought of as having units of unity (or percent or parts per million or so on).
+
+Although we are coming at this problem from the perspective of natural science, there are many other domains that have units of relevance, implicitly or explicitly.
+One good example in economic and financial contexts is money, which can be measured (say) in EUR or USD.
+There are also scalings in the sense that---in a business context, say---there can be numbers that are per-customer, and numbers that are per-employee, and numbers that apply to the enterprise as a whole.
+These kinds of considerations suggest that there will be generalizations of what's written here to domains way outside the natural sciences.
+
+Abstracting slightly, all the (say) SI units are built on \emph{base units} of kilograms ($\kg$), meters ($\m$), seconds ($\s$), kelvin ($\K$), amperes ($\A$), and a few others (such as moles).
+That is, it is possible to convert any SI unit into powers of the base units.
+For example, a pascal ($\Pa$) is a $\kg\,\m^{-1}\,\s^{-2}$, and a volt ($\V$) is a $\kg\,\m^{2}\,\s^{-3}\,\A^{-1}$.
+That is, the units of any physical quantity (in any unit system) can be converted to powers of the SI base units.
+
+Abstracting even further, there is a concept of dimensions, which is the generalization of units, or the thing that is unchanged when you change the units of something.
+Two energies, even if measured in different unit systems, both have the \emph{dimensions} of energy.
+In this sense, there are not just the \emph{base units} of $\kg$, $\m$, $\s$, $\K$, $\A$, and so on; there are also the \emph{base dimensions} of mass, length, time, temperature, current, and so on.
+That is, any energy can be expressed as a product of a mass times two powers of a length divided by two powers of a time.
+Or, said another way, an energy can be divided by a mass, divided by two powers of length, and multiplied by two powers of time to deliver a dimensionless quantity.
+It is always possible to create, from any dimensioned quantity, a dimensionless quantity by multiplying and dividing (carefully chosen) powers of quantities with the base dimensions.
+
+Physical law (and indeed all general relationships among things) obey dimensional rules (like an algebra but not precisely an algebra):
+Only objects with the same dimensions can be added or subtracted.
+And when two objects are multiplied (or divided), the resulting quantity has the product (or ratio) of the dimensions of the two input objects.
+These rules are powerful!
+For example, we used them to derive, in the first paragraph of this paper, the dependence on mass and length of the period of a simple pendulum, without (directly) employing any equations or physical model.
+
+Not only is it the case that physical quantities that are added have to have the same \emph{dimensions}.
+In detail, the \emph{numerical} addition of the quantities must be performed only after they have been converted to the same \emph{units} as well.
+And the products (or ratios) of quantities of units will have the products (or ratios) of the input-quantity units.
+
+There is also a concept of having well-defined and consistent base units:
+For example, imagine having a mass $M$ measured in grams, a length $L$ measured in inches, a force $F$ measured in newtons, and a speed $V$ measured in kilometers per hour. These quantities have inconsistent base units, in the sense that the time unit inside the force unit is not the same as the time unit inside the speed unit.
+Naive multiplication of different combinations of these quantities will produce outputs with incommensurate units.
+They have to be converted to consistent units prior to any arithmetic manipulations.
+In what follows, we will assume (and later \emph{require}) that the inputs and outputs of any model or problem under consideration has been converted into consistent units, for example the explicitly consistent SI system (\cite{si}).
+HOGG: DOES THIS KIND OF CONSISTENCY HAVE AN EXPLICIT NAME IN PHYSICS?
+
+HOGG: RE-WRITE THIS PARAGRAPH TO CENTER THE BUCKINGHAM PI THEOREM.
+Sometimes physicists like to work with dimensionless problems in which nothing in the problem has dimensions.
+How is this achieved?
+This is only possible in contexts in which there are unique natural or fundamental scales in the problem, and these scales have (or can be combined to have) dimensions of the relevant base dimensions.
+For example, in cosmological problems, the speed of light, the gravitational constant, and the Hubble constant can be combined to deliver a well-defined fundamental mass scale, length scale, and time scale.
+Once these are defined, many dimensioned quantities can be made dimensionless by scaling out these fundamental scales.
+This operation---of making a dimensioned problem dimensionless by using fundamental scales---is not what we do here!
+But it serves as our inspiration.
+
+HOGG: Introduce the integer vectors and matrices of importance.
+
+HOGG: Same dimensions may have different base units in real-world (see e.g.: depth of surface water). There may be qualitatively different features (e.g.: parameters of ODEs vs initial conditions of ODEs). Implementing the procedures that are described in this paper may require thought. It is not automatic. 
+
+\paragraph{Notation} 
+We consider a regression problem with training data $(\mathbf x_t, \mathbf y_t)_{t=1,\ldots N}$ where each input $\mathbf x$ has $p$ dimensioned elements, for instance its mass, temperature, velocity, etc. Each input will also include a set of $\ell$ fundamental constants like the speed of light, Newton's constant, etc. Each dimensioned element and universal constant has units, therefore  $\mathbf x = (x_i, \mathbf u_i )_{i=1,\ldots, p+\ell} \in (\mathbb R, \mathbb Z^k) =: \mathcal X^{p+\ell}$ where $x_i \in \mathbb R$ is a numerical value, and $\mathbf u_i \in \mathbb Z^k$ corresponds to the vector of units in a given order of base units. For instance, if the base units are $(\kg, \m, \s, \K)$, the an object of $2.0 \kg$ with an upward velocity of $5.0 \m/\s$ has features $(\text{mass, acceleration, Newton's constant})=(2.0, (1,0,0,0), 5.0, (0, 1, -1, 0) ,-9.8, (0, 1, -2, 0)).$ The label to predict is also dimensioned quantity $\mathbf y \in \mathcal X$.
+
+
+\section{Our approach}
+
+% input space: \mathcal X^p = (\mathbb R, \mathbb Z^k )^p  k is the number of base units 
+% fundamental constants: \mathcal Z speed of light, Newton constant, etc
+% g: (\mathcal X^p, \matchal Z) \to \mathbb R^s 
+% g is fixed (set algorithmically using SNF) but not unique
+% feature space: dimensionless scalars  $\xi \in \mathbb R^s$
+% h: \mathbb R^s \to \mathbb R
+% dimensionless label $\eta \in \mathbb R$
+% e_\mathbb X: \mathbb R \to \mathbb X
+% dimensioned output: $\hat y \in (\mathbb R, \mathbb Z^k )$ 
+% prediction F(x) = e_x(h(g(x)))
+
+% simplified setting for section 4:
+% without loss of generality we are learning a dimensionless function (for simplicity)
+% Analysis will focus on f(x)= h(g(x)) 
+% target function f*: R^p-> R (forgetting units)  f*(x) = h(g(x))
+% two types of regression, the one that restricts the learning to functions of the form h\circ g and the one that considers other featurizers \tilde g 
+% f = h \circ \tilde g
+% Claim \tilde g (x) = (g(x), other bs)
+% Goal is to show that using the other bs only hurts you.
+
+
+\begin{figure*}[]
+    \centering
+    \begin{tabular}{ccccccc}
+         inputs & featurizer & $\let\scriptstyle\textstyle\substack{\text{dimensionless}\\ \text{features}}$ & learned map & $\let\scriptstyle\textstyle\substack{\text{dimensionless}\\ \text{label}}$ & decoder & $\let\scriptstyle\textstyle\substack{\text{dimensioned}\\ \text{output}}$ 
+         \\
+         $\mathcal X^{p+\ell} = \underbrace{(\mathbb R, \mathbb Z^k)^p}_{\text{data inputs}}\times \underbrace{(\mathbb R, \mathbb Z^k)^\ell}_{\substack{\text{fundamental}\\ \text{constants}}}$& ${\Large \sxrightarrow[\hspace*{1cm}]{\phi}}$ &  $\mathbb R^s$ & ${\Large \sxrightarrow[\hspace*{1cm}]{h}}$ & $\mathbb R$ & ${\Large \sxrightarrow[\hspace*{1cm}]{g_{\mathbf x, \mathbf u}}}$ & $\mathcal X$ 
+    \end{tabular}
+    %Example: Learn energy from springy pendulum. Base units: $(\kg, \m, \s)$
+    %    \begin{tabular}{lc}
+    %    inputs &  
+    %    \\
+    %    mass $5.0, (1,0,0)$ &
+    %    \\
+    %    spring constant $1.0, (1, 0, -2)$
+    %    \\
+    %    spring length $0.10$ 
+    %\end{tabular}
+         % \\
+         %mass, spring constant, length, momentum, position, acceleration,
+         %label energy
+    \caption{Illustration of the proposed approach. For example, a simple physics problem that aims to learn the energy of a springy pendulum may have as... }
+    \label{fig:approach}
+\end{figure*}
+
+There are multiple approaches for imposing exact symmetries on machine-learning methods. Here we take an invariant-features approach (eg, \citealt{villar}).
+We begin by algorithmically constructing a featurizer $\phi(\cdot)$ that constructs  dimensionless features $\xi$ from the dimensioned input data $\mathbf x$, and a decoder $g_{\mathbf x, \mathbf u}(\cdot)$ that converts dimensionless label predictions $\hat{\eta}$ into dimensioned training-label predictions $\hat{\mathbf y}$ with dimensions of $\mathbf u$.
+See \figref{fig:approach} for a visualization of the setup.
+Regression (or classification, or any other task) proceeds as usual, but in the space of purely dimensionless features and labels, with the dimensioned training labels appearing only in the cost function.
+The concept underlying this approach is that, for the units equivariance to be exact, it is necessary that the inputs to any method that implements nonlinear functions of the input $\mathbf x$ (such as a multilayer perceptron, or a kernel regression) act instead only on dimensionless features $\xi$, because otherwise the nonlinearities effectively internally add and subtract quantities with different dimensions, which violates the equivariance.
+
+This approach borrows ideas from the Buckingham pi Theorem \cite{buckingham}, and uses technology from linear algebra over the integers \cite{smithnormalform} to construct the featurizer $\phi(\cdot)$ algorithmically.
+This featurizer delivers $s$ (dimensionless) products of integer powers of the elements of $x$.
+Specifically,  the featurizer is $\phi:\mathcal X^{p+\ell} \to \mathbb R^s$. If $\mathbf x=(x_i, \mathbf u_i)_{i=1, \ldots, p+\ell}$ then $\phi(\mathbf x) =(\phi_1(\mathbf x), \ldots, \phi_s(\mathbf x))$ where for all $j=1,\ldots s$ we have 
+\begin{equation} \label{b.pi}
+\xi_j=\phi_j(\mathbf x)= \prod_{i=1}^{p+\ell} x_i^{\alpha_{ji}} \text{ where }  \sum_{i=1}^{p+\ell} \alpha_{ji} \mathbf u_i =\mathbf 0 \in \mathbb Z^k,
+\end{equation}
+where the constraint guarantees that $\xi_j$ is dimensionless. This is classically known as the Buckingham Pi Theorem \cite{}. The exponents $\alpha_{ji} \in \mathbb Z$ can be found by solving the system of diophantine linear equations in \eqref{b.pi} and the solutions form a lattice. We could select our featurizer to produce a basis of the lattice (we use the Smith Normal Form to this end \cite{}), or we could select our featurizer to produce all lattice points within a bounded region. 
+
+If the dimensioned output is $(y, \mathbf u) \in \mathcal X$ we find a solution $\alpha_{yi}$ of $\sum_{i=1}^{p+\ell} \alpha_{yi} \mathbf u_i =\mathbf u$ and the decoder $g_{\mathbf x, \mathbf u}:\mathbb R \to \mathcal X$ is $g_{\mathbf x, \mathbf u}(\eta) = \eta x_i^{\alpha_{yi}}$.
+In words, the decoder finds from $\mathbf x$ a product of integer powers of elements of $\mathbf x$ that has the same dimensions as the output label $\mathbf y$, and multiplies the dimensionless label prediction $\hat{\eta}$ by that product.
+
+This approach places several significant burdens on the user, however:
+All elements of the input $\mathbf x$ and output $\mathbf y$ of the method must have well-defined and known units, and the units information must be encoded in the form of a $k$-vector of integer powers of a well-defined list of $k$ base units.
+Also, sometimes quantities external to the natural training data must be included with the inputs $\mathbf x$, such as parameters or fundamental constants (such as Newton's constant and the speed of light), that are relevant to unit conversions or natural relationships among quantities with different units.
+
+The key idea is that the dimensionless featurizer $\phi(\cdot)$, which produces $s$ dimensionless features, can be compared with an arbitrary featurizer $\tilde{\phi}(\cdot)$, which produces $\tilde{s}$ features that are not necessarily dimensionless. For example, we can consider the space spanned by rational monomials of inputs of a certain degree. The units-equivariance approach will produce features consisting of dimensionless rational monomials (example: $\text{mass}*\text{spring constant}*(\text{length})^2*(\text{momentum})^{-2}$ is a dimensionless rational monomial), whereas a non-equivariant approach can produce arbitrary features of the same type (rational monomials of bounded degrees). We claim that imposing the units-equivariance provides the correct inductive bias for the learning problem. In Section \ref{sec:analysis} we analyze the sample complexity gain of imposing this exact symmetry for some forms of kernel regression. 
+
+\paragraph{A lattice of dimensionless features} The Buckingham Pi theorem says that... 
+
+The dimensionless featurizer can be constructed to produce a strict subset of the features generated by the arbitrary featurizer, with a computable asymptotic ?? ratio $s/\tilde{s}$ of generated features WORDS HERE.
+In many cases of interest, this ratio is tiny, and thus the dimensionless featurizer substantially reduces model capacity at fixed complexity, removes parts of the function space that are inaccessible to units-equivariant nonlinear functions, reduces the risk (expected mean squared error) of any estimator, and improves generalization.
+
+This approach plays well with many machine-learning approaches, including linear regression, kernel regression, and deep learning:
+It involves only a swap-in replacement for the featurizing or feature normalization that is usually done prior to training a model, and a tweak to the output layer of the method.
+Thus it can be adapted to almost any machine-learning methods in use at the present day.
+
+\section{Model capacity and risk} \label{sec:analysis}
+
+In this Section we discuss ideas from \citealt{elesedy2021provably}, developed in the context of group-invariant and equivariant functions, and explain how to adapt them to provide explicit bounds of the generalization gap when dimension equivariance is imposed.
+
+Given a Hilbert space of functions $U$, they first split it in two orthogonal components, the ground-truth space $S$ (in their case the space of invariant functions), and the orthogonal complement $A$: $U= S\oplus A$. Now, given $f^*:\mathcal X \to \mathbb R^k$, $f^*\in S \in U$ they consider data $y=f^*(x)+\xi$ where $\xi$ is sampled from a zero-mean, finite variance distribution in $\mathbb R^k$. The risk of a function $f$ is
+\begin{equation}
+    \mathcal R(f) = \mathbb E_x \|y - f(x)\|_2^2
+\end{equation}
+and the the generalization gap is
+\begin{equation}
+    \Delta(f, \bar f)= R(f)-R(\bar f). 
+\end{equation}
+Let $\bar f:=\Pi_{A}f$ and $f^\perp:=\Pi_{S}f$ the respective orthogonal projections of f onto $A$ and $S$. The goal is to compute $\Delta(f, \bar f)$, namely what is the excess risk of doing the regression on the entire function space $U$ instead of restricting to the ground truth space $S$. A simple computation shows that 
+\begin{equation}
+    \Delta(f, \bar f) = \|f^\perp\|^2.
+\end{equation}
+
+
+Given a ground truth function $f^*: \mathcal X^{p+\ell} \to \mathbb R$ with dimensionless output\footnote{We assume the output is dimensionless for simplicity, without loss of generality a dimensioned output function $F^*:\mathcal X^{p+\ell} \to \mathcal X$ can be obtained as $F^*(\mathbf x)=g_{\mathbf x,\mathbf u}(f^*(\mathbf x))$ where $g_{\mathbf x,\mathbf u}$ is fixed.}, we compute the excess risk of optimizing over units equivariant rational monomials in comparison with all rational monomials of the same degree. 
+Let 
+\begin{multline}\mathcal H_M =\Big\{f:\mathbb R^{p+\ell}\to \mathbb R: f(\mathbf x) = \sum_{r} b_r \prod_{i=1}^k x_i^{a_{ri}}: 
+\\ b_r\in \mathbb R, \mathbf a_r=(a_{r1},\ldots a_{rk})\in \mathbb Z^k,  \|\mathbf a_{r}\|_\infty\leq M \Big\} \label{Hm}
+\end{multline}
+be the space spanned by rational monomials on the input with degree smaller or equal than $M$ (the infinity norm in \ref{Hm} could be replaced by the 1-norm). This is a finite-dimensional vector and we consider the inner product with orthonormal basis: 
+\begin{equation}
+\mathcal B:=\{\mathbf x^{\mathbf a}:= \Pi_{i=1}^k x_i^{a_i}: \mathbf a \in \mathbb Z^k, \|\mathbf a \|_\infty \leq M \}
+\end{equation} 
+Let $\bar {\mathcal H} $ be subspace of dimensionless monomials, as in \eqref{b.pi}, a linear subspace of $\mathcal H_M$. Following the notation from \citealt{elesedy_kernel} we write $\mathcal H_M = \bar {\mathcal H} \oplus \mathcal H^\perp$ where $\mathcal H^\perp$ is the orthogonal complement of $\bar {\mathcal H}$ inside $\mathcal H_M$.
+
+We consider $y = f^*(\mathbf x) + \epsilon$, where $f^*\in \bar {\mathcal H}$ (i.e. the ground truth is a dimensionless function). Given a function $f\in \mathcal H_M$ we decompose it as $f=\bar f + f^\perp$.
+A simple computation (see Lemma 6 in \citealt{elesedy2021provably}) shows that
+\begin{equation}
+    \Delta(f, \bar f) = \|f^\perp \|_2^2.
+\end{equation}
+Therefore, if 
+
+\begin{proposition}[Proposition 12 of \cite{elesedy2021provably}]
+
+\end{proposition}
+
+be a ground truth target function. We first observe that since the decoder function is determined by the problem (and not learn), without loss of generality we can assume that the target function is a function $f^*:\mathcal X^{p+\ell} \to \mathbb R$ with dimensionless output. 
+
+
+
+Reducing the problem of finding a unit-equivariant function to finding a dimensionless function of dimensionless inputs.
+
+$f^*: \mathcal X \to \mathbb R$ is a target (unit-equivariant) function.
+
+\section{Experimental demonstrations}
+
+We demonstrate the value of units equivariance with two example problems, one from physics and one from ecology.
+
+\paragraph{The springy pendulum}
+In this example problem, we consider a pendulum bob of mass $m$ (units of $\kg$) at the end of a linear spring, swinging under the influence of gravity.
+The total mechanical energy or hamiltonian $H$ (units of $\kg\,\m^{2}\,\s^{-2}$) of this system consists of a kinetic energy and two potential-energy contributions:
+\begin{align}
+    H = \underbrace{\frac{1}{2}\,\frac{|\mathbf{p}|^2}{m}}_{\text{kinetic energy}} + \underbrace{\frac{1}{2}\,k_\text{s}\,(|\mathbf{q}| - L)^2}_{\text{spring potential energy}} - \underbrace{m\,\mathbf{g}\cdot\mathbf{q}}_{\substack{\text{gravitational} \\ \text{potential energy}}} ~,
+\end{align}
+where $\mathbf{p}$ is the 3-vector momentum of the bob (units of $\kg\,\m\,\s^{-1}$), $|\mathbf{p}|^2 = \mathbf{p}\cdot\mathbf{p}$, $k_\text{s}$ is the spring constant (units of $\N\,\m^{-1}=\kg\,\s^{-2}$), $\mathbf{q}$ is the 3-vector position of the bob relative to the pivot (units of $\m$), $|\mathbf{q}|=\sqrt{\mathbf{q}\cdot\mathbf{q}}$, $L$ is the natural length of the spring (units of $\m$), $\mathbf{g}$ is the acceleration due to gravity (units of $\m\,\s^{-2}$).
+The natural base units here are the SI base units $(\kg,\m,\s)$.
+
+\paragraph{Arid vegetation model}
+In this example problem we consider a set of differential equations relating surface water $u$, water absorbed into the soil $w$, and vegetation density $v$ in an arid ecosystem \cite{rietkerk}.
+The differential equations are
+\begin{align}\label{eq:rietkerk}
+    \frac{\dd u}{\dd t} &= R - \alpha\,\frac{v + k_2\,w_0}{v + k_2}\,u + D_u\,\nabla^2 u\nonumber\\
+    \frac{\dd w}{\dd t} &= \alpha\,\frac{v + k_2\,w_0}{v + k_2}\,u - g_m\,\frac{v\,w}{k_1 + w} - \delta_w\,w + D_w\,\nabla^2 w\nonumber\\
+    \frac{\dd v}{\dd t} &= c\,g_m\,\frac{v\,w}{k_1 + w} - \delta_v\,v + D_v\,\nabla^2 v,
+\end{align}
+where $u,w,v$ are all functions of both two-dimensional position and time $t$, and the $\nabla^2$ operator is the scalar second derivative operator (Laplacian) with respect to position.
+In detail $u$ is surface water density (units of $\mm = \l\,\m^{-2}$), $v$ is soil water content (same units as $u$), $v$ is vegetation density (units of $\g\,\m^{-2}$, the time derivative operator has units of $\d^{-1}$, the Laplacian operator has units of $\m^{-2}$, and the units of everything else ($R$, $w_0$, $g_m$, and so on) can be inferred from the equations in \eqref{eq:rietkerk}.
+Here the natural base units are $(\l, \g, \d, \m)$.
+Of course there is a conversion $1000\,\l=1\,\m^3$, so we could reduce the base units by one in principle, but the way the equations work, there is no direct communication between water volume and distance across the surface, so these units can be kept separate.
+In general, the units equivariance is more powerful when there are more independent base units, which leads to substantial design decisions for the investigator (SOLE: WHAT TO SAY HERE?).
+
+\section{Discussion}
+Talk about cosmology and emulators in general.
+
+Talk about contexts in which units equivariance will be most valuable.
+
+
+% In the unusual situation where you want a paper to appear in the
+% references without citing it in the main text, use \nocite
+
+\bibliography{units}
+\bibliographystyle{icml2022}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% APPENDIX
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage
+\appendix
+\onecolumn
+\section{You \emph{can} have an appendix here.}
+
+You can have as much text here as you want. The main body must be at most $8$ pages long.
+For the final version, one more page can be added.
+If you want, you can use an appendix like this one, even using the one-column format.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\end{document}
+
+
+% This document was modified from the file originally made available by
+% Pat Langley and Andrea Danyluk for ICML-2K. This version was created
+% by Iain Murray in 2018, and modified by Alexandre Bouchard in
+% 2019 and 2021 and by Csaba Szepesvari, Gang Niu and Sivan Sabato in 2022. 
+% Previous contributors include Dan Roy, Lise Getoor and Tobias
+% Scheffer, which was slightly modified from the 2010 version by
+% Thorsten Joachims & Johannes Fuernkranz, slightly modified from the
+% 2009 version by Kiri Wagstaff and Sam Roweis's 2008 version, which is
+% slightly modified from Prasad Tadepalli's 2007 version which is a
+% lightly changed version of the previous year's version by Andrew
+% Moore, which was in turn edited from those of Kristian Kersting and
+% Codrina Lauth. Alex Smola contributed to the algorithmic style files.
