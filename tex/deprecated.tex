@@ -383,3 +383,52 @@ HOGG: WHAT HAPPENS IF WE FIND BASE QUANTITIES IN THE labels that don't exist any
 HOGG now discuss the case of the scalars model that we love so much.
 
 \end{document}
+
+
+\author[1,2]{Soledad~Villar}
+\author[3]{Weichi~Yao}
+\author[4,5,6]{David~W.~Hogg}
+\author[7]{Ben~Blum-Smith} 
+\author[8]{Bianca Dumitrascu}
+\affil[1]{Applied Mathematics \& Statistics, Johns Hopkins University}
+\affil[2]{Mathematical Institute for Data Science, Johns Hopkins University}
+\affil[3]{Leonard N. Stern School of Business, New York University}
+\affil[4]{Center for Cosmology and Particle Physics, Department of Physics, New York University}
+\affil[5]{Max-Planck-Institut f\"ur Astronomie, Heidelberg}
+\affil[6]{Flatiron Institute, a division of the Simons Foundation}
+\affil[7]{Center for Data Science, New York University}
+\affil[8]{Department of Computer Science and Technology, Cambridge University}
+
+
+As an example we consider a setting where we have two features $(X,Y)$ and the dimensionless features are computed as $\phi(X,Y) = X/Y$. We assume that we have two centered Gaussian distributions in $(X,Y)$: $\mu_1=\mathcal N(0, \Sigma_1)$ and $\mu_2 = N(0, \Sigma_2)$ where 
+$\Sigma_1=\left[\begin{matrix} \sigma_{1x} & 0 \\ 0 &\sigma_{1y}  \end{matrix}\right]$ and $\Sigma_2=\left[\begin{matrix} \sigma_{2x} & 0 \\ 0 &\sigma_{2y}  \end{matrix}\right]$. Now we consider the corresponding distributions of the dimensionless features (note that the reason why we chose the Gaussians to be centered is because if $Y$ is a non-centered Gaussian, then the mean of $1/Y$ does not exist \cite{}). 
+
+\begin{proposition}[I don't know if true yet]
+$KL(\mu_1|| \mu_2) \geq KL (\phi(\mu_1)||\phi(\mu_2))$ (or at least in some useful regime). 
+\end{proposition}
+
+\color{blue}
+(BD) Eq 1 in \citep{bakarji2022dimensionally} seems to hint that it would be hard to make a statement like this one. I suggest removing this example.
+\color{black}
+
+\begin{proof}
+First we compute $KL(\mu_1|| \mu_2)$ \cite{duchi}.
+\begin{equation}
+KL(\mu_1|| \mu_2) = \frac{1}{2}\log \frac{|\Sigma_1|}{|\Sigma_2|} - 2 + \tr(\Sigma_2^{-1}\Sigma_1) = \frac12 \log \frac{\sigma_{1x}\sigma_{1y}}{\sigma_{2x}\sigma_{2y}} - 2 + \frac{\sigma_{1x}}{\sigma_{1y}}+ \frac{\sigma_{2x}}{\sigma_{2y}}. \label{kl_gaussian}
+\end{equation}
+Second we observe that the quotient $X/Y$ satisfies a Cauchy distribution with density function
+\begin{equation}
+    P_{X/Y}(s)= \frac{1}{\pi} \frac{\frac{\sigma_{x}}{\sigma_y}}{s^2 +(\frac{\sigma_x}{\sigma_y})^2}. 
+\end{equation}
+Third we use Theorem 1 of \citep{chyzak2019closed}, that computes the KL divergence between two Cauchy distributions, which in this case greatly simplifies to
+\begin{equation}
+   KL (\phi(\mu_1)||\phi(\mu_2)) =\log \frac{(\frac{\sigma_{1x}}{\sigma_{1y}} + \frac{\sigma_{2x}}{\sigma_{2y}})^2 }{4\frac{\sigma_{1x} \sigma_{2x}}{\sigma_{1y}\sigma_{2y}}} \label{kl_cauchy}
+\end{equation}
+
+\color{blue}
+
+The question is, can we show that \eqref{kl_gaussian}$\geq$\eqref{kl_cauchy} ?
+\end{proof}
+
+Why is this useful? This is useful because of domain adaptation results that we should probably discuss.
+\color{black}

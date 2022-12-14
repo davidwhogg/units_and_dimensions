@@ -1,0 +1,1049 @@
+% This paper is part of the Units Equivariance project.
+% Copyright 2022 the authors.
+
+\documentclass[twoside,11pt]{article}
+
+% Any additional packages needed should be included after jmlr2e.
+% Note that jmlr2e.sty includes epsfig, amssymb, natbib and graphicx,
+% and defines many common macros, such as 'proof' and 'example'.
+%
+% It also sets the bibliographystyle to plainnat; for more information on
+% natbib citation styles, see the natbib documentation, a copy of which
+% is archived at http://www.jmlr.org/format/natbib.pdf
+
+% Available options for package jmlr2e are:
+%
+%   - abbrvbib : use abbrvnat for the bibliography style
+%   - nohyperref : do not load the hyperref package
+%   - preprint : remove JMLR specific information from the template,
+%         useful for example for posting to preprint servers.
+%
+% Example of using the package with custom options:
+%
+% \usepackage[abbrvbib, preprint]{jmlr2e}
+
+\usepackage[nohyperref, preprint]{jmlr2e}
+%\usepackage[letterpaper]{geometry}
+\usepackage{microtype}
+\usepackage{graphicx}
+\usepackage{mathrsfs}
+\usepackage{booktabs}
+\usepackage{float}
+\usepackage{array}
+% \usepackage{natbib}
+\usepackage[hidelinks]{hyperref}
+%\usepackage{amsmath}
+%\usepackage{amssymb}
+%\usepackage{mathtools}
+%\usepackage{amsthm}
+%\usepackage{authblk}
+\usepackage{comment}
+\usepackage{mathtools}
+\usepackage{color}
+\usepackage{wrapfig}
+% For tables
+\newcolumntype{C}[1]{>{\centering\arraybackslash}m{#1}}
+\newcolumntype{L}[1]{m{#1}}
+
+% if you use cleveref..
+%\usepackage[capitalize,noabbrev]{cleveref}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% THEOREMS
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\theoremstyle{plain}
+%\newtheorem{theorem}{Theorem}[section]
+%\newtheorem{proposition}[theorem]{Proposition}
+%\newtheorem{lemma}[theorem]{Lemma}
+%\newtheorem{corollary}[theorem]{Corollary}
+%\theoremstyle{definition}
+%\newtheorem{definition}[theorem]{Definition}
+%\newtheorem{assumption}[theorem]{Assumption}
+%\theoremstyle{remark}
+%\newtheorem{remark}[theorem]{Remark}
+
+% text macros and adjustments
+% \renewcommand{\small}{\normalsize} % don't trust in Hogg
+\newcommand{\documentname}{\textsl{Article}}
+\newcommand{\sectionname}{Section}
+\newcommand{\secref}[1]{\sectionname~\ref{#1}}
+\newcommand{\project}[1]{\textsl{#1}}
+\newcommand{\astropy}{\project{astropy}}
+\newcommand{\figref}[1]{\figurename~\ref{#1}}
+\newcommand{\tabref}[1]{\tablename~\ref{#1}}
+\frenchspacing %\sloppy\sloppypar\raggedbottom % trust in Hogg
+%\setlength{\topmargin}{-0.50in}
+%\setlength{\textheight}{9.25in}
+%\setlength{\oddsidemargin}{0.75in}
+%\setlength{\textwidth}{5.00in}
+%\pagestyle{myheadings}
+%\markboth{}{Villar et al. / Units equivariance for machine learning}
+
+% math macros
+\DeclareMathOperator{\tr}{tr}
+\DeclareMathOperator{\Var}{Var}
+\DeclareMathOperator{\Unif}{Unif}
+\newcommand{\dd}{\mathrm{d}}
+\newcommand{\set}[1]{\mathcal{#1}}
+\newcommand{\setS}{\set{S}}
+\newcommand{\kB}{k_{\mathrm{B}}}
+\newcommand{\unit}[1]{\mathrm{#1}}
+\newcommand{\kg}{\unit{kg}}
+\newcommand{\g}{\unit{g}}
+\newcommand{\m}{\unit{m}}
+\newcommand{\cm}{\unit{cm}}
+\newcommand{\mm}{\unit{mm}}
+\renewcommand{\l}{\unit{\ell}}
+\newcommand{\s}{\unit{s}}
+\renewcommand{\d}{\unit{d}}
+\newcommand{\K}{\unit{K}}
+\newcommand{\A}{\unit{A}}
+\newcommand{\J}{\unit{J}}
+\newcommand{\N}{\unit{N}}
+\newcommand{\Pa}{\unit{Pa}}
+\newcommand{\V}{\unit{V}}
+\newcommand{\sxrightarrow}[2][]{%
+  \mathrel{\text{$\xrightarrow[#1]{#2}$}}%
+}
+
+\title{ Dimensionless machine learning: \\ Imposing exact units equivariance}
+
+\author{\name Soledad Villar \email soledad.villar@jhu.edu \\
+       \addr Department of Applied Mathematics and Statistics, Johns Hopkins University\\
+       \addr Mathematical Institute for Data Science, Johns Hopkins University
+       \AND
+       \name Weichi Yao \email weichi.yao@nyu.edu\\
+       \addr Department of Technology, Operations and Statistics, New York University
+       \AND
+       \name David W. Hogg \email david.hogg@nyu.edu \\
+       \addr Center for Cosmology and Particle Physics, Department of Physics, New York University\\
+       \addr Max-Planck-Institut f\"ur Astronomie\\
+       \addr Flatiron Institute, a Division of the Simons Foundation
+       \AND
+       \name Ben Blum-Smith \email ben@cims.nyu.edu \\
+       \addr Center for Data Science, New York University
+       \AND
+       \name Bianca Dumitrascu \email bmd39@cam.ac.uk\\
+       \addr Department of Computer Science and Technology, Cambridge University
+       }
+\editor{TBD}
+\jmlrheading{1}{2000}{1-48}{4/00}{10/00}{meila00a}{Villar et al.}
+
+\ShortHeadings{Units equivariance for machine learning}{Villar et al.}
+\firstpageno{1}
+
+\begin{document}
+
+\maketitle
+\thispagestyle{empty}
+
+\begin{abstract}\noindent
+Units equivariance is the exact symmetry that follows from the requirement that relationships among measured quantities of physics relevance must obey self-consistent dimensional scalings. Here, we employ dimensional analysis and ideas from equivariant machine learning to provide a two stage learning procedure for units-equivariant machine learning. For a given learning task, we first construct a dimensionless version of its inputs using classic results from dimensional analysis, and then perform inference in the dimensionless space. Our approach can be used to impose units equivariance across a broad range of machine learning methods which are equivariant to rotations and other groups. We discuss the in-sample and out-of-sample prediction accuracy gains one can obtain in contexts like symbolic regression and emulation, where symmetry is important. We illustrate our approach with simple numerical examples involving dynamical systems in physics and ecology.
+\end{abstract}
+
+\section{Introduction}\label{sec:intro}
+In recent years, there has been enormous progress in developing machine learning methods which incorporate exact symmetries. Some of these methods involve group convolutions~\citep{cohen2016group,Cohen2016steerable,wang2020certified}, irreducible representations of groups \citep{fuchs2020se,kondor2018n,thomas2018tensor,weiler20183d,cohen2018spherical,Weiler2019e2equivariant} or
+constraints \citep{finzi},
+while others involve the construction of explicitly invariant features \citep{gripaios2021lorentz, haddadin2021invariant, villar, yao}.
+Indeed, the revolutionary performance of convolutional neural networks \citep{lecun1989backpropagation} was enabled by the imposition of a local translational symmetry at the bottom layer of the networks.
+When a learning problem obeys an exact symmetry, we have the strong intuition that imposing that symmetry must improve learning and generalization, and there is now theoretical work supporting this intuition \citep{elesedy2021provably, bietti2021sample, mei2021learning}.
+Much of this work has been situated in the physics domain \citep{yu-physics,kashinath2021physics}, because physical laws exactly obey a panoply of symmetries.
+
+One of the symmetries of physics---and indeed all of the sciences---is the symmetry underlying dimensional analysis.
+Quantities that are added or subtracted must have identical units.
+And if the units system of the inputs to a function is changed, the units of the output must change accordingly.
+This symmetry---which we will call ``units equivariance''---has many implications.
+One is that it is possible to derive scalings and dependencies of outputs on inputs from the units directly.
+For example, if a problem involves only a length $L$, an acceleration $g$, and a mass $m$, and the problem is to learn or predict a time $t$, it is possible from units alone to see that $t\propto\sqrt{L/g}$.
+Another implication is that inhomogeneous functions (such as the usual transcendental functions) can only be applied to dimensionless quantities.
+If a quantity $x$ is dimensional, an inhomgeneous polynomial expression in $x$ is inconsistent with the principle that quantities to be added or subtracted must have identical units; thus inhomogeneous functions (including most non-linear functions) must be a function only of dimensionless inputs.
+These symmetries are strict and exact, and not just in physics:
+In chemistry, ecology, and economics, for examples, the inputs and the outputs of functional relationships have non-trivial units, and the results must be equivariant to the choice of units system.
+
+The laws of the natural sciences obey strong symmetries.
+Observed data sets do not always show these symmetries as clearly, because investigator choices and the location and state of observing or measuring hardware can break those symmetries.
+For example, the Universe is isotropic and homogeneous, but our observations of the Universe are anisotropic and
+inhomogeneous, because we observe different parts of the Universe and in different directions with different fidelity.
+However, the fundamental theories are exactly symmetric.
+This suggests that the imposition of exact symmetries might be most important in contexts in which machine learning methods are being used to emulate theoretical simulations.
+In particular, when attempting to find symbolic expressions (for example, \citealt{cranmer2020discovering, udrescu2020ai}) matching data from unknown quantities of practical physical interest, symmetries are not only unavoidable, they also enable learning by constraining the large, combinatorial, otherwise unidentifiable space of generic functions \citep{udrescu2020ai}. These considerations apply to all symmetries, including the units equivariance we articulate and exploit here.  
+
+The work presented here is in the context of group equivariant machine learning \citep{cohen2016group, maron2018invariant, kondor2018n} and builds on previous work on machine learning for physics, in which it has been shown that group-invariant scalars are the only inputs needed by a machine learning method, if the goal is to learn group-equivariant functions of geometric objects (such as scalars, vectors, and tensors; \citealt{villar, yao}).
+With what is developed here, we can make these scalars \emph{dimensionless} before they are used as inputs, and then scale the dimensions or units back in before the final outputs are delivered (or before cost functions are evaluated).
+In all these projects, the fundamental philosophy is to transform the features into invariant forms before they are used to train the machine learning method, and then to un-transform label predictions at the output or at test time.
+These approaches to symmetry-respecting machine learning are simple to implement and perform extremely well \citep{yao}.
+
+\paragraph{Our contributions:}\nopagebreak\begin{itemize}
+\item 
+We define a \emph{units equivariance} and incorporate it into machine learning models using ideas from classical dimensional analysis.
+\item
+We show that exact units equivariance is easy to impose on many kinds of learning tasks, by constructing a dimensionless version of the learning task, performing the dimensionless task, and then scaling back in the proper dimensions (and units) at the end (perhaps prior to evaluating the cost function).
+Dimensionless quantities are invariants with respect to changes of units and can be computed using discrete linear algebra algorithms.
+In this sense, the approach we advocate here is related to approaches based on group invariants to impose exact group equivariances \citep{villar}.
+\item 
+We briefly discuss how imposing units equivariance allows for out-of-distribution generalization, and in the case of linear regressions, decreases the risk of the estimators (\secref{sec:bias}). 
+\item
+We discuss extensions of theoretical results on generalization bounds for regression problems under symmetries generated by compact groups \citep{elesedy2021provably}, to the group of scalings (which is not compact but reductive).  
+\item
+We demonstrate with a few simple numerical regression problems that the reduction of model capacity (at fixed complexity) delivered by the units equivariance leads to improvements in generalization.
+In this context, we discuss symbolic regression and emulator related tasks. We also discuss limitations of our approach in the context of unknown dimensional constants.
+\end{itemize}
+
+\paragraph{Related work:}
+Dimensional analysis is a classical theory with applications in engineering and science (\citealt{barenblatt_1996} is a comprehensive textbook in the subject).
+These ideas have been connected to machine learning previously \citep{rudolph1998context, frisone2019buckingham, bakarji2022dimensionally}. The key theoretical result in dimensional analysis is the Buckingham Pi Theorem \citep{buckingham1914pi}, which says that a function is units equivariant if and only if it is a function of a set of dimensionless scalars, obtained as products of integer powers of the input features, with appropriate scaling. Integer linear algebra algorithms allow us to find a generating set of  dimensionless features \citep{hubert2012rational}. In this work we use these dimensionless features to produce units-equivariant machine-learning methods.
+
+Machine-learning methods based on neural networks have shown to be extremely successful, significantly advancing the state of the art in many scientific tasks. However, the design of the neural networks is key for their success. Many of the design choices are based on exact or approximate symmetries satisfied by the data or the problem. Recent work has incorporated group invariances and equivariances to the design of the architectures. The most common example is graph neural networks, where learned functions are equivariant with respect to a certain action by permutations which change the order in which the nodes appear in the adjacency matrix \citep{gilmer2017neural,duvenaud2015convolutional, chen2019cdsbm,gama2020graphs}. 
+This has been extended to general groups and actions, leading to the field of equivariant machine learning, which restricts the class of neural neural networks to only represent functions that are invariant or equivariant with respect to a certain group action \citep{maron2018invariant}. This requires to be able to parameterize the space of equivariant functions, which is not always computationally easy \citep{xu2018powerful,morris2019higher,chen2019equivalence,chen2020can}. Methods include group convolutions \citep{cohen2016group,Cohen2016steerable,wang2020incorporating}, irreducible representations \citep{fuchs2020se,kondor2018n,thomas2018tensor,weiler20183d,cohen2018spherical,Weiler2019e2equivariant}, constraints \citep{finzi}, and classical invariant theory to design invariant features \citep{gripaios2021lorentz, haddadin2021invariant, villar}. 
+Applications of equivariant machine learning span from molecular dynamics, to turbulence, to climate and traffic prediction \citep{batzner2021se,wang2020towards,bakarji2022dimensionally, kashinath2021physics, jin2020composing}, to name a few directions.
+
+The reason why one may want to impose symmetries is intuitive. Many systems, in particular physical systems, are constrained by the laws of physics, which satisfy exact symmetries. A related approach is provided by the physics-informed machine learning literature \citep{karniadakis2021physics}, where expertise from classical numerical analysis and scientific computing are incorporated into machine learning pipelines. For instance, machine learning methods that make use of highly accurate numerical integrators.
+
+The imposition of symmetries can improve inductive bias when the symmetries encode correct domain knowledge. 
+One may expect it to reduce the sample complexity and generalization error.  A recent line of work develops mathematical theory to quantify the benefits of imposing symmetries and group equivariance in regression problems. The work of \citet{elesedy2021provably} provides a computation of the excess risk in the context of linear regression, then extended to kernel regressions in \citet{elesedy_kernel}. The works of \citet{bietti2021sample} and \citet{mei2021learning} focus on quantifying the sample complexity gain for regressions with (finite) group-invariant kernels. The work by \cite{brugiapaglia2021invariance} show that certain symmetries have to be imposed or otherwise many learning algorithms are not able to learn correctly.
+
+Further, numerous studies have explored data augmentation as an approach to empirically encourage invariance and symmetries. Data augmentation techniques aim to expand (or augment) training data sets with properly transformed data points that retain crucial properties of the original training data. Data augmentation has a long history \citep{baird1992document, van2001art} with many techniques shown to yield empirical improvements in a variety of tasks \citep{wong2016understanding, cubuk2018autoaugment, cubuk2020randaugment}. Recently, theoretical treatments have also been proposed to augment the favorable empirical performance \citep{dao2019kernel, chen2020group,shen2022data}. A recent group-theoretic treatment \citep{chen2020group} showed that data augmentation can lead to variance reduction properties in the context of empirical risk minimization. In another study, data augmentation is characterized as a way to alter the relative importances of features and is shown to be less likely to overfit to noise \citep{shen2022data}.
+
+Here we will end up assuming that the dimensions and units of all regression inputs are known, complete, and self consistent. However, a different direction would be to look at how dimensional relationships or other symmetries are \emph{discovered}. This is the setting for \citet{constantine2017data}, and \citet{evangelou2021parameter}. This idea---discovery of dimensional structure---connects to prior work as a particular case of the more general problem of learning symmetries from data \citep{benton2020learning, cahill2020lie}.
+
+\section{Units and dimensions} 
+Almost every physical quantity (any position, velocity, or energy, say) has units (inches, kilometers per hour, or BTUs, say).
+In the physical sciences we are advised to use SI units \citep{si}, which include meters ($\m$), meters per second ($\m\,\s^{-1}$), and Joules ($\J$), for example.
+Any energy can be converted to $\J$, any velocity can be converted to $\m\,\s^{-1}$, and so on, according to known conversion factors.
+There are dimensionless quantities in physics too, such as Reynolds numbers, or concentrations, but these can also be thought of as having units of unity (or percent or parts per million or so on).
+
+Abstracting slightly, all the (say) SI units are built on \emph{base units} of kilograms ($\kg$), meters ($\m$), seconds ($\s$), kelvin ($\K$), amperes ($\A$), and a few others (such as moles).
+That is, it is possible to convert any SI unit into powers of the base units.
+For example, a pascal ($\Pa$) is a $\kg\,\m^{-1}\,\s^{-2}$, and a volt ($\V$) is a $\kg\,\m^{2}\,\s^{-3}\,\A^{-1}$.
+That is, the units of any physical quantity can be converted to powers of the SI base units.
+
+Abstracting even further, there is a concept of dimensions, which is the physical entity being measured by units, or the thing that is unchanged when you change the units of something.
+Two energies, even if measured in different unit systems, both have the \emph{dimensions} of energy.
+In this sense, there are not just the \emph{base units} of $\kg$, $\m$, $\s$, $\K$, $\A$, and so on; there are also the \emph{base dimensions} of mass, length, time, temperature, current, and so on.
+That is, any energy can be expressed as a product of a mass times two powers of a length divided by two powers of a time.
+Or, said another way, an energy can be divided by a mass, divided by two powers of length, and multiplied by two powers of time to deliver a dimensionless quantity.
+It is always possible to create, from any dimensioned quantity, a dimensionless quantity by multiplying and dividing (carefully chosen) powers of quantities with the base dimensions.
+
+Physical law (and indeed all general relationships among things) obey dimensional rules:
+Only objects with the same dimensions can be added or subtracted.
+And when two objects are multiplied (or divided), the resulting quantity has the product (or ratio) of the dimensions of the two input objects.
+These rules are powerful!
+For example, we used them to derive, in the first Section of this paper, the dependence on mass and length of the period of a simple pendulum, without (directly) employing any equations or physical model.
+
+Not only is it the case that physical quantities that are added must have the same \emph{dimensions}.
+In detail, the \emph{numerical} addition of the quantities must be performed only after they have been converted to the same \emph{units} as well.
+And the products (or ratios) of quantities of units will have the products (or ratios) of the input-quantity units.
+
+There is also a concept of having well-defined and consistent base units:
+For example, imagine having a mass $M$ measured in grams, a length $L$ measured in inches, a force $F$ measured in newtons, and a speed $V$ measured in kilometers per hour. These quantities have inconsistent base units, in the sense that the time unit inside the force unit is not the same as the time unit inside the speed unit.
+Naive multiplication of different combinations of these quantities will produce outputs with incommensurate units.
+They have to be converted to consistent units prior to any arithmetic manipulations.
+This consistency of the base units is sometimes called \emph{coherence} or \emph{units coherence}.
+In what follows, we will assume (and later \emph{require}) that the inputs and outputs of any model or problem under consideration has been converted into coherent units, for example the explicitly coherent SI system \citep{si}.
+
+Coherence is a hard requirement, but still leaves a lot of room to maneuver.
+For example, in one of the examples in \secref{sec:experiments}, we measure horizontal distances in meters and volumes of water in liters.
+These are incoherent technically, since a volume can be expressed as a length cubed.
+However, since we express the problem such that horizontal distances and volumes never inter-convert, we can coherently express the problem with this choice.
+
+Sometimes physicists like to work with dimensionless problems in which nothing in the problem has dimensions.
+How is this achieved?
+This is only possible when the problem considered exhibits unique natural or fundamental scales that have (or can be combined to have) dimensions of the relevant base dimensions.
+For example, in cosmological problems, the speed of light, the gravitational constant, and the Hubble constant can be combined to deliver a well-defined fundamental mass scale, length scale, and time scale.
+Once these are defined, many dimensional quantities can be made dimensionless by scaling out these fundamental scales.
+This operation---of making a dimensional problem dimensionless by using fundamental scales---is supported theoretically by the Buckingham Pi Theorem \citep{buckingham1914pi} and motivates this work. 
+
+\section{Definitions}
+
+%We consider a space $\mathcal X$, which consists of coherent (meaning described in a consistent units system) dimensional elements.
+%Each point of the space is a real number endowed with a set of exponents that specify the dimensions and units.
+%We consider functions  $f:\mathcal X^{d} \to \mathcal X$ where each input is a list of dimensional elements, for instance a mass, temperature, velocity, etc.
+%The units of each element of $\mathcal X$ can be expressed as a vector of exponents (usually integers) that gives the powers of the base dimensions that make up the units of that quantity.
+%Mathematically  $((x_i, \mathbf u_i ))_{i=1,\ldots,d} \in (\mathbb R, \mathbb Z^k)^{d} =: \mathcal X^{d}$ where $x_i \in \mathbb R$ is a numerical value, and $\mathbf u_i \in \mathbb Z^k$ corresponds to the vector of exponents of the units in a given order of base units.
+%For instance, if the base units are $(\kg, \m, \s, \K)$, an element corresponding to an energy of $2.9\,\J$ has the form $(2.9, [1,2,-2,0])$.
+%\color{blue}
+
+We consider spaces $\mathcal Z = \prod_{i=1}^d \mathcal X_{\mathbf u_i}$, which consist of coherent (meaning described in a consistent units system) dimensional elements. Each factor $\mathcal X_{\mathbf u_i}$ is a space of values for a given feature, which is measured in units specified by a parameter $\mathbf u_i$. Thus $x_1\in \mathcal X_{\mathbf u_1}$ might be a mass, $x_2\in \mathcal X_{\mathbf u_2}$ a temperature, $x_3\in \mathcal X_{\mathbf u_3}$ a velocity, etc. As a set, each $\mathcal X_{\mathbf u_i}$ is just $\mathbb R$, but the specification of its dimensions via $\mathbf u_i$ endows it with a specific action by a group $G$ of rescalings. A precise development of this setup follows.
+
+We fix a list of $k$ base units in terms of which all the desired features can be described. For example, if the features consist of energies, temperatures, velocities, forces, masses, and accelerations, the base units could be $(\kg, \m, \s, \K)$ (and $k=4$). The choice of base units determines a {\em rescaling group} $G := \mathbb R_{>0}^k$. An element $(g_1,\dots,g_k)\in G$ rescales the $i$th base unit by a factor of $g_i$ for each $i$.
+
+Say there are $d$ features. Then for each $i=1,\dots, d$, we express the units of the $i$th feature in terms of the base units, and record this expression in an integer vector $\mathbf u_i\in \mathbb Z^k$, whose $j$th component is the exponent to which the $j$th base unit occurs in this expression. Continuing the example, if the first feature is an energy measured in Joules, then $\mathbf u_1 = [1,2,-2,0]$, because $1\,\J = 1\, \kg\,\m^2/\s^2$. We then define $\mathcal X_{\mathbf u_i}$ to be the real line $\mathbb R$ equipped with the action by $G$ induced by its action on the base units. Explicitly, if $x_i\in \mathcal X_{\mathbf u_i}$ and $g=(g_1,\dots,g_k)\in G$, then the action is given by the formula
+\begin{equation}
+g\cdot x_i = \left(\prod_{j=1}^k g_j^{-u_{ij}}\right) x_i.
+\end{equation}
+In our running example, if we replace $\kg$ with $\g$ and $\m$ with $\cm$, leaving $\s$ and $\K$ untouched, then the group element that accomplishes this rescaling is $g=(0.001,0.01,1,1)$, and if $x_1=2.9$, representing a value of $2.9\, \J$, then 
+\[
+g\cdot x_1 = (0.001)^{-1}(0.01)^{-2}(1)^{2}(1)^0 (2.9) = 2.9 \times 10^7
+\]
+reflecting the fact that $2.9\, \J = 2.9\times 10^7\, \g\,\cm^2/s^2$.
+
+The space of features is then the cartesian product
+\begin{equation} \label{eq.Z}
+    \mathcal Z = \prod_{i=1}^d \mathcal X_{\mathbf u_i}.
+\end{equation}
+It is a real vector space under coordinatewise addition and multiplication by (dimensionless) scalars. Furthermore, because each factor carries an action by the rescaling group $G$, the space $\mathcal Z$ does as well. Note that the action is completely specified by the ordered list $(\mathbf u_1,\dots, \mathbf u_d)\in (\mathbb Z^k)^d$ of units vectors. Sometimes we will denote $\mathbf x \in \mathcal Z$ as $\mathbf x=(x_i, \mathbf u_i)_{i=1,\ldots, d}$ to indicate the units of each of its features. We call such a $\mathcal Z$ a \textbf{units-typed space}, and a function between units-typed spaces a \textbf{units-typed function}.
+
+\begin{definition}
+If a units-typed function $f: \mathcal Z_\mathcal X \rightarrow \mathcal Z_\mathcal Y$ has the property that
+\begin{equation}
+    f(g\cdot x) = g\cdot (f(x))
+\end{equation}
+for every $g\in G$, then $f$ is a \textbf{units-equivariant function}.
+\end{definition}
+
+%For example, imagine that $f$ is a units-equivariant function that takes as input a mass, a length, and an acceleration, and returns a time and an energy.
+%If the mass, length, and acceleration inputs are multiplied by $1$, $1$, and $1/25$ respectively, then the time and energy outputs should end up multiplied by $5$ and $1/25$ respectively.
+%That is, the units equivariance is an expression of the natural dimensional and units-conversion scalings.
+
+In order for a function $f$ to be units-equivariant, it will be necessary that each of the output exponent vectors of $\mathcal Z_{\mathcal Y}$ lies in the span of the set of input exponent vectors of $\mathcal Z_{\mathcal X}$.
+
+
+%In other work \citep{villar} we are concerned with geometric properties of scalar, vector, and tensor inputs to machine learning problems.
+%For now, we will imagine that vectors and tensors are represented just in terms of their components in a chosen basis.
+%Each component of a vector with units (such as a velocity or an acceleration) or of a tensor with units (such as a resistivity) can be represented as an element of $\mathcal X$.
+%In physics all elements of a vector or tensor must have the same units vector $\mathbf u$. By combining the formulation from \citep{villar} with our current formulation, we can make units-equivariant and coordinate-free models (see \secref{sec:experiments}).
+
+
+Finally, we point out that in addition to $\mathcal Z$ being a real vector space, elements of $\mathcal X_{\mathbf u}$ can be multiplied by elements of $\mathcal X_{\mathbf u'}$. In summary the algebraic rules for $ x \in \mathcal X_{\mathbf u}$ and $ x' \in \mathcal X_{\mathbf u'}$, $\alpha \in \mathbb R$ and $\gamma \in \mathbb Z$ are the following:  
+\begin{align}
+ \alpha \, (x, \mathbf u) &=(\alpha\, x, \mathbf u), \text{where $\alpha$ is a dimensionless scalar}\\
+    (x, \mathbf u) + (x', \mathbf u' ) &= \left \{
+    \begin{array}{l}
+    (x+x', \mathbf u) \text{ if } \mathbf u=\mathbf u' \\
+    \text{does not exist otherwise}
+    \end{array}
+    \right. \\
+    (x, \mathbf u)\, (x', \mathbf u' ) &=(x\, x', \mathbf u + \mathbf u') \\
+    (x, \mathbf u)^{\gamma} &= (x^\gamma, \gamma\,\mathbf u ), \text{ where $\gamma$ is a (dimensionless)  integer}.
+\end{align}
+Thus $\mathcal X_\mathbf{u}$ can be seen as a homogeneous component of degree $\mathbf u$ in a $\mathbb Z^k$-graded algebra. We do not make explicit use of this, however.
+
+%\begin{definition}[Units-typed space, units-typed function]
+%A space $\mathcal Z\subset \mathcal X^d$ is a \textbf{units-typed space}
+%with units defined by the ordered list $(\mathbf u_1, \ldots, \mathbf u_d)$
+%if $\mathcal Z =  \prod_{i=1}^d \mathcal X_{\mathbf u_i}$,
+%where $\mathcal X_{\mathbf u_i} = (\mathbb R, \mathbf u_i) \subset \mathcal X$ is the corresponding fiber of $\mathcal X$.
+%A \textbf{units-typed function} is a function 
+%$f: \mathcal Z_X \to  \mathcal Z_Y$, where $\mathcal Z_X$ and $\mathcal Z_Y$ are units-typed spaces.
+%\end{definition}
+%%
+%For example, imagine that $f$ is a units-typed function that takes as input a mass, a length, and an acceleration, and returns a time and an energy.
+%If the base dimensions are mass, length, and time, then this function $f$ takes inputs from the units-typed space $\mathcal Z_X$ defined by vectors $\mathbf{u}_1, \mathbf{u}_2, \mathbf{u}_3 = [1,0,0], [0,1,0], [0,1,-2]$ and delivers outputs in the units-typed space $\mathcal Z_Y$ defined by vectors $[0,0,1], [1,2,-2]$.
+
+%\begin{definition}[Units-equivariant function]
+%Let $f: \prod_{i=1}^d \mathcal X_{\mathbf u_i} \to  \mathcal \prod_{i'=1}^{d'} X_{\mathbf v_{i'}}$ be a units-typed function. We say $f$ is \textbf{units-equivariant} if $f=(f_1, \ldots, f_{d'})$, where each $f_{i'}:\prod_{i=1}^d \mathcal X_{\mathbf u_i} \to  \mathcal X_{\mathbf v_{i'}}$ satisfies that for all $g \in \mathbb R_{>0}$ and all $j\in \{1,\ldots, k\}$ we have
+%\begin{equation}
+%    f_{i'}(g^{u_{1j}} (x_1, \mathbf u_1), \ldots, g^{u_{dj}}( x_d, \mathbf u_d)  ) = g^{v_j}f_{i'}((x_1, \mathbf u_1), \ldots, ( x_d, \mathbf u_d)),
+%\end{equation}  
+%namely, in each coordinate it is a scaling-equivariant function, with respect to scalings with powers according to the units exponents. We will sometimes drop the units vectors $\mathbf u$ from the notation for simplicity.
+%\end{definition}
+
+
+
+\section{Units-equivariant regressions} \label{sec:approach}
+
+Given training data $(\mathbf x_t, \mathbf y_t)_{t=1,\ldots N}$, where $\mathbf x_t\in \mathcal Z_X$ and $\mathbf y_t\in \mathcal Z_Y$ (both units-typed spaces), a units-equivariant regression is a regression restricted to a space of units-equivariant functions.
+
+
+There are multiple approaches for imposing exact symmetries on machine learning methods. Here we take an invariant-features approach \citep{villar}.
+We begin by algorithmically constructing a featurizer $\phi(\cdot)$ that constructs dimensionless features $\xi$ from the dimensioned input data $\mathbf x$, and a decoder $g_{\mathbf x, \mathbf v}(\cdot)$ that converts dimensionless label predictions $\hat{\eta}$ into dimensioned training-label predictions $\hat{\mathbf y}$ with dimensions of $\mathbf v$.
+See \figref{fig:approach} for a visualization of the setup.
+
+Regression (or classification, or any other task) proceeds as usual, but in the space of purely dimensionless features and labels, with the dimensioned training labels appearing only in the cost function.
+The concept underlying this approach is that, for the units equivariance to be exact, it is necessary that the inputs to any method that implements nonlinear functions of the input $\mathbf x$ (such as a multilayer perceptron, or a kernel regression) act instead only on dimensionless features $\xi$, because otherwise the nonlinearities effectively (internally) add and subtract quantities with different dimensions, which violates the equivariance. This approach borrows ideas from the Buckingham Pi Theorem \citep{buckingham1914pi}, and uses technology from linear algebra over the integers \citep{stanley2016smithnormalform} to construct the featurizer $\phi(\cdot)$ algorithmically. 
+
+\begin{figure}[tp]
+    \centering \small
+    \begin{tabular}{ccccccc}
+    \hspace{-0.8cm}
+         $\let\scriptstyle\textstyle\substack{\text{dimensional}\\ \text{inputs}}$ &
+         featurizer &
+         $\let\scriptstyle\textstyle\substack{\text{dimensionless}\\ \text{features}}$ &
+         $\let\scriptstyle\textstyle\substack{\text{learned}\\ \text{map}}$ &
+         $\let\scriptstyle\textstyle\substack{\text{dimensionless}\\ \text{label}}$ &
+         decoder & $\let\scriptstyle\textstyle\substack{\text{dimensional}\\ \text{output}}$ 
+         \\
+         \hspace{-.8cm}$\mathcal Z$
+         & 
+         ${\Large \sxrightarrow[\hspace*{1cm}]{\phi}}$ &  $\mathbb R^s$ & ${\Large \sxrightarrow[\hspace*{1cm}]{h}}$ & $\mathbb R$ & ${\Large \sxrightarrow[\hspace*{1cm}]{g_{\mathbf x, \mathbf v}}}$ & $\mathcal X_{\mathbf v}$ 
+    \end{tabular}
+    \caption{Overview of the general approach.}
+    \label{fig:approach}
+\end{figure}
+
+Specifically, the input space $\mathcal Z$ includes $d$ dimensional input features, such as mass, temperature, etc \eqref{eq.Z}. Some of the inputs will be fundamental constants, such as Newton's constant, speed of light, etc. 
+The featurizer $\phi: \mathcal Z \to \mathbb R^s$ delivers $s$ (dimensionless) products of integer powers of the numerical elements of $\mathcal Z$.
+If $\mathbf x=(x_i, \mathbf u_i)_{i=1, \ldots, d}$ then $\phi(\mathbf x) =(\phi_1(\mathbf x), \ldots, \phi_s(\mathbf x))$ where for all $j=1,\ldots s$ we have 
+\begin{equation} \label{b.pi}
+\xi_j=\phi_j(\mathbf x)= \prod_{i=1}^{d} x_i^{\alpha_{ji}} \text{ where }  \sum_{i=1}^{d} \alpha_{ji} \mathbf u_i =\mathbf 0 \in \mathbb Z^k,
+\end{equation}
+where the constraint guarantees that $\xi_j$ is dimensionless.
+The exponents $\alpha_{ji} \in \mathbb Z$ can be found by solving the system of diophantine linear equations in \eqref{b.pi} and the solutions form a lattice, the dimension of which can be computed as:
+\begin{equation}
+\small
+    \text{$\#$dimensionless features = $\#$input variables - $\#$independent units},
+\end{equation}
+where the number of \emph{independent} units coincides with the number of linearly independent vectors in $\{\mathbf u_i\}_{i=1}^d$. For example, consider three velocities $v_1,v_2,v_3$ with units $\m\,\s^{-1}$, the number of units is two ($\m $ and $\s$), but the number of independent units is one, making the dimensionless scalars a two-dimensional lattice. 
+
+We could select our featurizer to produce a basis of the lattice (we use the Smith Normal Form to this end \citep{stanley2016smithnormalform}, a similar approach to \citep{hubert2012rational}, which uses the Hermite Normal Form), or we could select our featurizer to produce all lattice points within a bounded region. 
+
+If the dimensioned output is $\mathbf y = (y, \mathbf v) \in \mathcal X$ we find an integer solution $\alpha_{yi}$ of $\sum_{i=1}^{d} \alpha_{yi} \mathbf u_i =\mathbf v$ and the decoder $g_{\mathbf x, \mathbf v}:\mathbb R \to \mathcal X$ is $g_{\mathbf x, \mathbf v}(\hat\eta) = \hat\eta \prod_{i=1}^{d} x_i^{\alpha_{yi}}$.
+In words, the decoder finds from $\mathbf x$ a product of integer powers of elements of $\mathbf x$ that has the same dimensions as the output label $\mathbf y$, and multiplies the dimensionless label prediction $\hat{\eta}$ by that product.
+This is possible because any units-equivariant function must have the exponent vector $\mathbf v$ lie in the span of the input vectors $\{\mathbf u_i\}_{i=1}^d$.
+
+The training of a regression model usually involves optimization of a loss function.
+This is often a norm of a difference between the training labels $\mathbf y$ and their predictions $\hat{\mathbf{y}}$.
+When the problem is made dimensionless, this loss can be made dimensionless as well, or else
+it can be left dimensional.
+In many contexts the loss is a chi-squared objective or a log-likelihood, or can be interpreted as such.
+In these cases the loss is dimensionless naturally.
+The units-equivariance approach we recommend is agnostic to whether the loss is dimensionless or dimensional; adoption of this approach does not require adoption of any particular loss.
+
+This approach does, however, place several significant burdens on the user:
+All elements of the input $\mathbf x$ and output $\mathbf y$ of the method must have well-defined and known units, and the units information must be encoded in the form of a $k$-vector of integer powers of a well-defined list of $k$ base units.
+Also, sometimes quantities external to the natural training data must be included with the inputs $\mathbf x$, such as parameters or fundamental constants (such as Newton's constant and the speed of light), that are relevant to unit conversions or natural relationships among quantities with different units.
+
+The key idea is that the dimensionless featurizer $\phi(\cdot)$, which produces $s$ dimensionless features, can be compared with an arbitrary featurizer $\tilde{\phi}(\cdot)$, which produces $p$ features that are not necessarily dimensionless. For example, we can consider the space spanned by rational monomials of inputs of a certain degree. 
+\begin{definition}[Rational monomial]
+A function $P:\mathbb R^d \to \mathbb R$ is a \textbf{rational monomial} (also known as a \textbf{Laurent monomial}) if 
+\begin{equation}
+    P(x_1,\ldots, x_d) = \prod_{i=1}^d a_i x_i^{\alpha_i},
+\end{equation}
+where the coefficients $a_i\in \mathbb R$ and the exponents $\alpha_i \in \mathbb Z$. The degree of $P$ is defined as $\sum_{i=1}^d |\alpha_i|$.
+\end{definition}
+
+The units-equivariance approach \eqref{b.pi} will produce features consisting of dimensionless rational monomials (example: $\text{mass}*\text{spring constant}*(\text{length})^2*(\text{momentum})^{-2}$ is a dimensionless rational monomial), whereas a non-equivariant approach can produce arbitrary features of the same type (rational monomials of bounded degrees). We claim that imposing the units equivariance provides a good inductive bias for the learning problem. In \secref{sec:bias} we briefly discuss the generalization gains of imposing this exact symmetry.
+
+This approach plays well with many machine learning approaches, including linear regression, kernel regression, and deep learning:
+It involves only a swap-in replacement for the featurizing or feature normalization that is usually done prior to training a model, and a tweak to the output layer of the method.
+Thus it can be adapted to almost any machine learning methods in use at the present day.
+
+\section{Bias, variance, and generalization}
+\label{sec:bias}
+
+Imposing the exact units-equivariance symmetry in regression tasks improves the prediction performance even in cases where the held out data has out-of-distribution properties.
+This empirical improvement can be partly attributed to the fact that the symmetry acts like a physics-informed prior which constraints the regression inputs to satisfy correct dimensional scaling relationships. Another reason is due to dimensionality reduction: when the task is made dimensionless the resulting number of independent, dimensionless inputs is always strictly less than the number of dimensional inputs. Therefore, at fixed model complexity (e.g. rational monomials of a certain degree), the number of free parameters or the model capacity goes down when the problem is made dimensionless. A third reason is that the dimensional scalings aid out-of-distribution generalization, because there are many very different distributions (e.g., for the features) in the dimensional inputs that map to the same distribution in dimensionless quantities. This observation is corroborated in related literature where different types of equivariances are shown related to data augmentation procedures \citep{chen2020group}, which, in turn, lead to empirically favorable performance in out-of-distribution settings \citep{liang2022metashift}.
+
+These considerations lead to problem-dependent improvements. In what follows, we focus on linear combinations of rational monomials---where the featurizer and decoder (\secref{sec:approach}) construct rational monomials of the task inputs. %This setting resembles a linear regression setup, where analytic results exist \cite{XX}.
+
+\paragraph{Model capacity}
+In the rational monomial context, let $X$ be an  $n\times p$ matrix made up of rational monomials of the input dimensional features, where $n$ is the number of training-data examples and $p$ is the number of rational monomials. In the standard linear regression setting, consider a $n\times 1$ set of labels $Y$, $Y = [y_1, \ldots, y_n]^\top$, related to $X$ though the linear form $y_i = x_i^\top \beta + \epsilon_i$, with $\epsilon_i \sim \mathcal{N}(0, \sigma^2)$. We  consider two cases: one (naive) in which the feature matrix $X$ is $n\times p$ and contains rational monomials with no regard to their dimensions, and another (dimensionless) in which the feature matrix $\bar{X}$ is $n\times s$ and contains only dimensionless rational monomials.
+
+
+The linear combinations of rational monomials up to a fixed degree can be imagined as a lattice of integer vectors inside a ball of some norm, because each rational monomial has the inputs taken to integer powers, including negative powers.
+In this case a third-degree rational monomial, say, would have a norm of three, possibly an $L1$ norm (but there is a choice).
+If there are $d$ dimensional inputs, the number $p$ of rational monomial terms up to (and including) order $r$ that can be made is equal to the number of lattice points in the unit-cell integer lattice of dimension $d$ inside a $d$-ball of radius $r$.
+Naively, the number $p$ scales as $r^d$ with some prefactor that depends on the norm choice (and $d$).
+
+The number of dimensionless rational monomials to the same degree is far less.
+There are two reasons. First, there are $d-k$ independent dimensionless quantities, where $k$ is the number of independent units in play, so the lattice is lower in dimensionality. Second, the lattice of dimensionless quantities has a unit cell that is larger than unity, in general. Thus the number $s$ of dimensionless rational monomial terms scales as $r^{d-k}$ with a small prefactor.
+In general, in problems of interest, we expect $s\ll p$.
+Our experiments (\secref{sec:experiments}) confirm this expectation.
+
+
+%Everything about regressions improve when the model capacity is reduced at fixed complexity, when (as in this case) the reduction in capacity can be made without removing the terms that contribute to the true data relationships.
+%This is possible because our fundamental assumption is that the true model is units equivariant.
+
+
+
+\paragraph{Bias and Variance}
+We briefly recall the standard notions of bias, variance and risk arising in regression tasks. With the standard min-norm L2 objective, the best-fit coefficient vector $\hat\beta$ is given by
+\begin{align}
+    \hat\beta &\leftarrow X^\dagger\, Y~,\\
+    X^\dagger &= \left\{\begin{array}{cr}
+    (X^\top X)^{-1} X^\top & \mbox{for $n>p$} \\
+    X^\top (X\,X^\top)^{-1} & \mbox{for $n<p$}
+    \end{array}\right.
+\end{align}
+where $X^\dagger$ is the pseudo-inverse of $X$.
+The cost function in the naive case is the standard L2 loss $\|Y-X\,\beta\|_2^2$.
+In the dimensionless case, the cost function is $\|Y-g_{X,Y}(\bar{X}\beta)\|_2^2$, where $g_{X,Y}()$ is the decoder function (see above) which multiplies each element of $\bar{X}\,\beta$ by a rational monomial of the inputs. The resulting dimensionless $\bar{X}\,\beta$ matches the size of the labels $Y$. Further, the associated \emph{risk} $R$ or expected mean-squared error on held-out test data, can be decomposed in a squared-bias term and a variance term of the form
+\begin{align}
+    R &= \underbrace{\beta^\top \Pi\,\Sigma\,\Pi\,\beta}_{\mbox{squared bias}} + \underbrace{\frac{\sigma^2}{n}\,\tr(\hat\Sigma^\dagger\,\Sigma)}_{\mbox{variance}}
+    +\,\sigma^2
+\end{align}
+where $\hat\Sigma = \frac{1}{n}\,X^\top X$ is the empirical variance tensor, 
+$\Pi = I - \hat\Sigma^\dagger\,\hat\Sigma$ is a projection operator,  $\beta$ is the true coefficient vector,
+and $\hat\Sigma^\dagger$ is the pseudo-inverse of $\hat\Sigma$.
+For more discussion of the assumptions underlying such expressions, see, for example \cite{hastie}.
+
+For our purposes, the most important assumption is that the true $\beta$ exists!
+That is, the true relationship between $X$ and $Y$ is contained within the scope of the feature space.
+Under this assumption, the bias usually vanishes when $p<n$, or when the empirical variance $\hat\Sigma$ is full rank.
+This regime is called the under-parameterized regime.
+The bias is non-zero when $p>n$.
+This is called the over-parameterized regime.
+In this regime, the bias generally increases as $p$ increases. The reduction in model capacity from $p$ in the naive case to $s$ in the dimensionless case (with $s\ll p$) thus enormously decreases the bias.
+Either the reduction from $p$ to $s$ takes the problem from over-parameterized to under-parameterized, and thus eliminates the bias entirely, or else it reduces the bias within the over-parameterized regime. 
+
+%Note that if the assumption holds that the true model lives within the model space in the naive-regression case, then this assumption will also hold in the dimensionless-regression case, since the reduction of model capacity proceeds by removing rational monomials that can't possibly be involved in the true model.
+%That is, we assume that the true model is units-equivariant.
+
+Similarly, the reduction in model capacity from $p$ to $s$ (with $s\ll p$) will also generally decrease the variance of the estimator.
+%The trace in the variance expression scales like $p$ (and approaches $p$ exactly in the limit $n\rightarrow\infty$).
+Thus the variance is also expected to be reduced when the problem is made dimensionless.
+As we just noted, this all depends critically on the true model being in the space of linear combinations of the rational monomials, and the true model obeying the units equivariance.
+
+\paragraph{Out-of-distribution generalization}
+The exact scaling symmetries enforced by the units equivariance extend to arbitrary dilations of the base dimensions. Thus they connect function outputs for very different inputs.
+In the context of regression this means that the predictions of trained units-equivariant models ought enable accurate predictions far outside the domain of the training set.
+One way to state this is to compare the domains of the dimensionless features to the domains of the raw dimensional features.
+%Consider, for example, a task that involves 3 masses and 3 lengths.
+%This problem has 6 dimensional inputs, but only 4 independent dimensionless inputs.
+%When the problem is made dimensionless it gets smaller.
+%But there are also effects of coverage:
+%If, in the training set, the masses are all in the finite range $0<m<10\,\kg$ (say), the range of dimensionless mass ratios covered by the training set is potentially unbounded.
+%The dimensionless problem is not only smaller in number of inputs, but also often better covered by the training set.
+
+Mathematically, this can be stated in terms of out-of-distribution generalization \citep{arjovsky2020out, geisa2021towards, dey2022out}. 
+In particular, consider a generic problem with $d$ inputs with dimensions made from $k$ base units, and (therefore) a basis of $s=d-k$ dimensionless quantities. Consider a training set sampled from a distribution $\mu$ supported in a compact set $\mathcal D \subset \mathbb R^d$. This induces a distribution $\phi(\mu)$ in the space of dimensionless features $\mathbb R^s$.
+Many distributions in $\mathbb R^d$ (possibly even supported in disjoint sets) map to $\phi(\mu)$.
+For a trivial example, consider $d=2$ mass inputs, such that $k=1$; if the training set has masses in $\kg$ drawn from $\Unif(0,1)$ and the test set has masses in $\g$ drawn from $\Unif(0,10^4)$, they will nonetheless both have the same distribution in the one ($d-k=1$) available independent dimensionless quantity (the ratio of masses).
+This is one reason why this method allows us to generalize to settings that can be considered out-of-distribution in the original input space.
+We conjecture that the out-of-distribution generalization improvement spans beyond this trivial case.
+We show numerical evidence of this claim in \secref{sec:experiments}.
+We believe that a rigorous out-of-distribution result could be formalized using techniques from domain adaptation and meta-learning \citep{ben2010theory, mansour2009domain, hanneke2019value, li2018learning, kang2018transferable};
+we leave that for future work.
+
+\section{The geometry of invariant function spaces}\label{sec:analysis}
+
+Recent results show how to compute explicitly the gains in terms of generalization gaps and sample complexity of imposing group invariances and equivariances in machine learning. The results from \citet{mei2021learning} and \citet{bietti2021sample} hold for finite groups, whereas the results from \citet{elesedy2021provably} and \citet{elesedy_kernel} hold for general compact groups.
+Specifically, \citet{elesedy2021provably} shows that if we are aiming to learn a target invariant function $f^*$ from samples from an invariant distribution $\mu$, then for any estimator $\hat f$, the projection of $\hat f$ onto the space of invariant functions has smaller expected error. We explain the details below, in this \sectionname.
+
+The problem we consider here, units equivariance, uses the group of scalings, which is unfortunately non-compact so the results from \citet{elesedy2021provably} don't directly apply. In particular given a function, it is unclear what is the \emph{correct} notion of its projection onto the space of invariant functions? This is particularly relevant because our approach does not compute a regression to later project its estimator onto the space of invariant functions. It directly solves a regression in a space of invariant functions. The question of how much does one gain by using this approach assumes the existence of a certain non-invariant baseline.
+
+There are two notions of projection we consider, (1) the so-called Reynolds projection, which generalizes the notion of averaging the function along the group orbit, (2) the orthogonal projection with respect to the measure $\mu$ used to generate the data.
+In the case of compact groups and data sampled from invariant measures both notions coincide, giving a very simple expression for the generalization gap of a function in comparison with its projection onto the space of invariant functions. However, we will see that in the non-compact case, the notions do not coincide for any real measure $\mu$.
+
+%There is also the notion of our approach, which is not a projection but produces an invariant function from data. This could be seen as an orthogonal projection of a finitely supported function with respect to a finitely supported measure. 
+
+In the rest of this section we
+\begin{itemize}
+\item Summarize the ideas from \citet{elesedy2021provably} that allow them to compute a generalization gap for compact groups.
+\item Explain how to extend those techniques to non-compact groups using Weyl's trick.
+\item Show that if we replace $\mathcal X$ with a complex domain, and the measure is invariant with respect to complex scalings of modulus $1$, then the results from \citet{elesedy2021provably} hold.
+\item Show that if the domain is real, the two notions of projection don't match for any choice of measure.
+\end{itemize}
+
+
+\paragraph{Projections onto invariant functions}
+We first explain ideas from \citet{elesedy2021provably} developed in the context of invariant and equivariant functions with respect to actions by compact groups.
+
+Given $X\subseteq \mathbb R^d$ and $G$ a compact group acting on $X$, we fix a $G$-invariant measure $\mu$. We consider the Hilbert space of functions $\mathcal H=\mathscr L_2(X, \mu)$. The action of $G$ on $X$ induces a natural action on $\mathcal H$ via the formula
+\[
+[\lambda\cdot f](x) := f(\lambda^{-1}\cdot x)
+\]
+for $x\in X$ and $\lambda \in G$. We split $\mathcal H$ into two orthogonal components, the closed \emph{ground-truth} $G$-invariant subspace $\bar{ \mathcal H}$ consisting of the functions $f\in\mathcal H$ satisfying $\lambda\cdot f = f$ for all $\lambda\in G$, and its orthogonal complement $\mathcal H^\perp$, so that $\mathcal H = \bar{ \mathcal H }\oplus \mathcal H^\perp$. Using that $\mu$ is $G$-invariant, it is noted \citep{elesedy2021provably} that the orthogonal projection onto $\bar{ \mathcal H}$ coincides with averaging along the $G$-orbit, also known as the Reynolds operator:
+\begin{equation} \label{eq.projection}
+    \mathcal O f(x) = \int_{G} f(\lambda \cdot x) d\lambda,
+\end{equation}
+where $\lambda$ is the normalized Haar measure of the group. The Reynolds operator has good algebraic properties. It can be alternatively characterized as the unique $G$-invariant projection $\mathcal H \rightarrow \bar {\mathcal H}$, i.e., the unique linear map $\mathcal O: \mathcal H \rightarrow \bar {\mathcal H}$ that restricts to the identity on $\bar {\mathcal H}$ and satisfies 
+\begin{equation}
+\mathcal O (\lambda \cdot f) = \mathcal O f
+\end{equation}
+for $\lambda \in G$ and $f\in \mathcal H$. Yet another characterization is that it restricts to the identity on any subspace consisting of invariants, and to zero on any $G$-stable subspace not containing nontrivial invariants. The Hilbert space $\mathcal H$ contains the algebra of compactly-supported continuous functions $C_c(X)$ as a dense subspace, and the Reynolds operator has the property that its restriction to this algebra commutes with multiplication by invariant such functions, i.e., it satisfies
+\begin{equation}
+    \mathcal O (fh) = f\mathcal O h
+\end{equation}
+for all $f\in C_c(X)^G$ (the subalgebra of invariant compactly-supported continuous functions) and $h\in C_c(X)$. In other words, $\mathcal O$ restricts to a $C_c(X)^G$-module projection $C_c(X)\rightarrow C_c(X)^G$.
+Given $f$ we have
+$\arg\min_{h \in \bar {\mathcal H}} \| h - f\|_{\mu}^2 =\mathcal O(f)$.
+In order to show this, it suffices to observe that $\mathcal 
+O$ is self-adjoint with respect to the inner product in $\mathscr L_2(X, \mu)$:
+\begin{eqnarray}
+ \langle \mathcal O f, h \rangle_\mu &=& \int_X \left\langle \int_G f(g\cdot x) d\lambda , h(x) \right \rangle d\mu(x) \label{eq.sa1}\\
+&=& \int_X \int_G \langle  f(g\cdot x) , h(x) \rangle  d\lambda \, d\mu(x) \\
+&=& \int_X \int_G \langle  f( x) , h(g^{-1}\cdot x) \rangle  d\lambda \, d\mu(x) \label{eq.ginverse}\\
+&=& \langle f,  \mathcal O h \rangle_\mu. \label{eq.sa4}
+\end{eqnarray}
+Note that \eqref{eq.ginverse} holds due to $\mu$ being $G$-invariant. Under this assumption, this property of $\mathcal O$ is to be expected:  the $G$-invariance of $\mu$ means that the inner product on $\mathcal H = \mathscr L_2(X,\mu)$ is also $G$-invariant, thus $G$ acts by unitary transformations on $\mathcal H$, so the latter's decomposition into irreducible representations of $G$ is an orthogonal decomposition. Because $\mathcal O$ annihilates the nontrivial representations, it thus amounts to orthogonal projection to the space of invariants.
+
+
+Now, given $f^*:X \to \mathbb R^k$, 
+$f^*\in \bar{ \mathcal H}$, \citet{elesedy2021provably} consider data $y=f^*(x)+\xi$ where $\xi$ is sampled from a zero-mean, finite variance distribution in $\mathbb R^k$. 
+The risk of a function $f$ is the expected value of the prediction error
+\begin{equation} \label{eq.risk}
+     R(f) = \mathbb E_{x\sim \mu} \|y - f(x)\|_2^2
+\end{equation}
+and given two functions $f$ and $f'$ the generalization gap is
+\begin{equation}
+    \Delta(f, f')= R(f)-R(f'). 
+\end{equation}
+In \citet{elesedy2021provably} a regression problem is considered in which the regression is performed on a subspace $U \subset \mathcal H$ that is closed under \eqref{eq.projection}. Then $U$ can be decomposed into closed subspaces $U = \bar U \oplus U^\perp$ where $\bar U \subset \bar{ \mathcal H}$ and $U^\perp \subset \mathcal H^\perp$. Given a function $f\in U$, let $\bar f:=\Pi_{\bar U}f$ and $f^\perp:=\Pi_{U^\perp}f$ the respective orthogonal projections of $f$. 
+Note than under the present hypothesis $\bar f := \mathcal O f$ and $f^\perp := f - \mathcal O f$ since $\mathcal O$ restricted to $U$ is  the orthogonal projection to $\bar U$.
+
+The goal is to compute $\Delta(f, \bar f)$, namely what is the excess risk of doing the regression on the function space $U$ instead of restricting to the invariant subspace $\bar U$, which corresponds to the ground truth. A simple computation shows that if $x$ is sampled from $\mu$, then
+\begin{equation} \label{eq.proj}
+    \Delta(f, \bar f) = \|f^\perp\|^2_\mu;
+\end{equation}
+this in particular shows that there is always a benefit to restricting to the ground truth subspace. For instance if the target is a group invariant function, and we do a regression in a space of polynomials, we might as well restrict the regression to group invariant polynomials, since the generalization error will be strictly smaller.
+
+The rest of the analysis in \citet{elesedy2021provably} focuses on computing $\|f^\perp\|^2_\mu$ for data models, for instance, assuming $U$ is the space of linear functions (they discuss both over and under parameterized), and the input is Gaussian with mean zero and identity covariance (assuming the spherical Gaussian distribution is $G$-invariant). A slightly more general formulation allows them to express the same ideas for equivariance. This work has been extended to kernel regressions \citep{elesedy_kernel}.
+
+\paragraph{Reynolds projection onto scaling invariant functions via Weyl's unitarian trick}
+
+Let $\mathcal X = (\mathbb R, \mathbb Z^k)^d$ where each of the $d$ features $x_i$ has base units exponents $\mathbf u_i = (u_{i1}, \ldots u_{ik})\in \mathbb Z^k$ expressed in terms of $k$ base units. 
+The Buckingham Pi theorem discussed in \secref{sec:approach} shows that units-equivariant functions are in a one-to-one correspondence with functions of (finitely many) dimensionless features (constructed as products of powers of input features). 
+This characterization also implies that the dimensionless functions are exactly the functions that are invariant with respect to unit rescalings. For each base units, represented here by the index $j\in \{1,\ldots, k\}$, we consider $u_{ij}$, its exponent in each feature $x_i$. Then $f$ is scaling invariant (i.e. dimensionless\footnote{We assume the output is dimensionless for simplicity, without loss of generality a dimensioned output function $F^*:\mathcal Z \to \mathcal X_{\mathbf v}$ can be obtained as $F^*(\mathbf x)=g_{\mathbf x,\mathbf u}(f^*(\mathbf x))$ where $g_{\mathbf x,\mathbf u}$ is fixed.}) if and only if for all $g \in \mathbb R_{>0}$ and all $j\in \{1,\ldots, k\}$ we have
+\begin{equation}
+    f(g^{u_{1j}} x_1, \ldots, g^{u_{dj}} x_d ) = f(x_1, \ldots, x_d),
+\end{equation}  
+this property is also known as self-similarity \citep{barenblatt_1996}.
+The rescalings can be seen as an action by the appropriate renormalization group, in this case $G=(\mathbb R_{>0})^k$, defined as
+\begin{equation}\label{eq.group-action}
+(g_1, \ldots, g_k)\cdot (x_1, \ldots, x_d) = \left( (\prod_{j=1}^kg_{j}^{u_{1j}}) x_1, \ldots, (\prod_{j=1}^kg_{j}^{u_{dj}}) x_d   \right).
+\end{equation}
+Since the group is not compact, the results of \citet{elesedy2021provably} are not directly applicable. However, it is closely related to the reductive real algebraic group $(\mathbb R^\times)^k$, so some of the concepts can be generalized by using Weyl's unitarian trick. (This will require us to work in complex space.) However, the key property from \citet{elesedy2021provably} in which the Reynolds projection coincides with the orthogonal projection with respect to the measure, will not hold in real space.
+
+%For simplicity we now assume that each input feature has dimensions where at most one base unit appears with exponent 1, namely $u_{ij}=0$ for all $j$ except for at most one, satisfying $u_{ij}=1$. This assumption is not without loss of generality, we later discuss when this assumption makes sense. We rearrange the features $x_i$ so that the first $s_1$ features have units $(1,0,\ldots 0)$ the second $s_2$ features have units $(0,1,0,\ldots 0)$, and so on. Now the scaling invariance can be expressed as:
+%\begin{equation} \label{eq.scaling.simple}
+%    f(\alpha_1 x_1, \ldots, \alpha_1 x_{s_1}, \alpha_2 x_{s_1+1}, \ldots, \alpha_k x_d ) = f(x_1, \ldots, x_{s_1}, x_{s_1+1}, \ldots, x_d).
+%\end{equation}  
+
+
+We consider $U$ a space of real analytic functions (for instance, rational monomials). We can define a Reynolds projection to the $G$-invariant functions $\bar U$, analogous to \eqref{eq.projection}, by using Weyl's unitarian trick. If $f: \mathbb R^d \to \mathbb R$ is a real analytic function it has an analytic continuation, $f_{\mathbb C}: \mathbb C^d \to \mathbb C$, such that $f_{\mathbb C}|_{\mathbb R^d} = f$. Weyl's unitarian trick is to replace the group $G = (\mathbb R_{> 0})^k$ with the torus % NB: "complex torus" means something different
+$\mathbb T^k={ \{\mathbf z\in \mathbb C^k: |z_i|=1 \}}$. Both groups are Zariski-dense in the group $(\mathbb C^\times)^k$---in other words, any polynomial that vanishes identically on either $G$ or $\mathbb T^k$ actually vanishes identically on all of $(\mathbb C^\times)^k$---and it follows, because the group action \eqref{eq.group-action} is described by rational functions, that all three groups have the same invariants. On the other hand, the torus $\mathbb T^k$ is compact, so we can average over it to obtain a projection
+\begin{equation}
+    \mathcal Q f(x_1, \ldots, x_d) =   \int_{\mathbb{T}^k} f_{\mathbb C} \big( (z_1, \ldots, z_k) \cdot ( x_1, \ldots, x_d )\big) d\lambda_{\mathbb C}(\mathbf z), \label{eq.proj.complex}
+\end{equation}
+where the Haar measure $\lambda_{\mathbb C}$ coincides with the (normalized) Lebesgue measure on the torus---namely, the Lebesgue measure scaled by $\frac{1}{(2\pi)^k}$.
+
+In order to explain how the projection $\mathcal Q$ behaves, we first note that the rational monomials define characters for the group action. Namely,
+\begin{equation}
+\mathbf x^{\mathbf a} = \prod_{i=1}^d x_i^{a_i}, \quad (z_1,\ldots z_k)\cdot \mathbf x^{\mathbf a} = (\prod_{j=1}^k z_j^{\sum_{s=1}^k {u_{sj}}a_j})\mathbf x^{\mathbf a},
+\end{equation}
+therefore 
+\begin{align}
+\chi_{\mathbf x^{\mathbf a}}: \mathbb (\mathbb C_{>0})^k &\to \mathbb C_{>0} \\
+(z_1, \ldots, z_k) &\mapsto \prod_{j=1}^k z_j^{\sum_{s=1}^k {u_{sj}}a_j} 
+\end{align}
+is a continuous group homomorphism (same for the real characters). 
+Therefore, the rational monomials are eigenvectors of $\mathcal Q$
+\begin{equation}
+\mathcal Q (\mathbf x^{\mathbf a}) = \int_{\mathbb T^k} 
+\mathbf z \cdot \mathbf x^{\mathbf a} \lambda_{\mathbb C}(\mathbf z)
+= 
+\int_{\mathbb T^k} \chi_{\mathbf x^{\mathbf a}} (\mathbf z) \, \mathbf x^{\mathbf a} \lambda_{\mathbb C}(\mathbf z) 
+= 
+ \mathbf x^{\mathbf a} \int_{\mathbb T^k} \chi_{\mathbf x^{\mathbf a}} (\mathbf z) \lambda_{\mathbb C}(\mathbf z).
+\end{equation}
+A standard computation shows that if $\chi$ is a character of a compact group with Haar measure $\lambda$, then $\int_G \chi(g) d\lambda = \lambda(G)$ if $\chi$ is trivial, and 0 otherwise. In particular this shows
+\begin{equation}
+\mathcal Q(\mathbf x^{\mathbf a}) = \left \{
+\begin{matrix} 
+\mathbf x^{\mathbf a} & \text{if } \sum_{s=1}^k u_{sj} a_j =0 \text{ for all } j=1,\ldots, k
+\\
+0 & \text{otherwise.}
+\end{matrix}
+\right. \label{eq.proj_monomials}
+\end{equation}
+ In other words, comparing \eqref{eq.proj_monomials} with \eqref{b.pi}, a rational monomial is either invariant under the group action (i.e. dimensionless), or it is in the kernel of $\mathcal Q$. Thus $\mathcal Q$ is a Reynolds operator for the group of scalings.
+
+\paragraph{Generalization gap for (complex) units equivariant regressions} In order to use the results from \citet{elesedy2021provably} it is not enough to have a projection $\mathcal Q$. We need $\mathcal Q$ to be an orthogonal projection in an $\mathscr L_2$ space.
+To this end, we consider a space of functions of the original input features, where the units equivariant functions are a linear subspace. The characterization from dimensional analysis discussed above suggests to focus on rational monomials. Unfortunately the rational monomials may have poles when features are zero, so in order to define the inner product we will restrict the measure $\mu$ to have bounded support which does not include zero. In particular we can consider $X^d=([-b,-a]\cup [a,b])^d$, and $\mu$ the standard (Lebesgue) measure in $\mathbb R^d$ restricted to $X^d$ and 0 outside $X$. We let $\mathcal H = \mathscr L_2( \mathbb R^d, \mu)$. We note that $\mu$ is not scaling invariant, and indeed, no compactly-supported measure is scaling-invariant. Relatedly, $\mathcal Q$ is not an orthogonal projection in $\mathscr L_2( \mathbb R^d, \mu)$ for any real measure $\mu$. But we will make it work.
+
+Since we extended the class of functions to a complex domain to use Weyl's trick, we also need to extend the measure $\mu$ to $\mu_{\mathbb C^d}$. We consider the Lebesgue measure in $\mathbb C^d$ with support $(X_{\mathbb C})^d$ where $X_{\mathbb C}= \{z\in \mathbb C:  a<|z|<b \}$. Now $\mathcal H_{\mathbb C} = \mathscr L_2( \mathbb C^d, \mu_{\mathbb C^d})$. We will see that even though $\mu_{\mathbb C^d}$ is a complex analog of $\mu$, the resulting Hilbert spaces are not necessarily comparable. In particular $\mathcal Q$ is an orthogonal projection in $\mathscr L_2( \mathbb C^d, \mu_{\mathbb C^d})$, due to the fact that $\mu_{\mathbb C^d}$ is rotationally symmetric (i.e., invariant under the action by $\mathbb T^d$).
+
+\begin{proposition}
+If $U \subseteq \mathcal H_{\mathbb C}$ is a linear subspace closed under scalings, then $\mathcal Q$ defined in \eqref{eq.proj.complex} is the orthogonal projection onto the space of scaling invariant functions. In particular $U=\bar U \oplus U^{\perp}$ where $\bar U = \text{Image}(\mathcal Q)$  and $U^{\perp}=\text{kernel}(\mathcal Q)$. 
+\end{proposition}
+\begin{proof}
+It suffices to show: (a) $\mathcal Q (U)\subset U$. (b) $f$ is scaling invariant if and only if $\mathcal Q(f)=f$. (c) $\mathcal Q$ is self adjoint for $\langle \cdot, \cdot \rangle_{\mu_{\mathbb C^d}}$. This can be shown with a similar argument to \eqref{eq.sa1}-\eqref{eq.sa4}:
+\begin{eqnarray}
+ \langle \mathcal Q f, h \rangle_{\mu_{\mathbb C^d}} &=& \int_{X_{\mathbb C}^d} \left\langle
+  \int_{\mathbb T^k } f(\mathbf z \cdot  \mathbf x) 
+  d\lambda_{\mathbb C}( \mathbf z) , 
+  h^*(\mathbf x) \right \rangle d\mu_{\mathbb C^d}(\mathbf x)\\
+&=& 
+\int_{X_{\mathbb C}^d} \int_{\mathbb T^k } \langle  f(\mathbf z \cdot \mathbf x) , h^*(\mathbf x) \rangle  d\lambda_{\mathbb C}(\mathbf z) \, 
+d\mu_{\mathbb C^d}(\mathbf x) \\
+&=& \int_{X_{\mathbb C}^d} \int_{\mathbb T^k } \langle  f( \mathbf x) , 
+h^*(\mathbf z^{-1}\cdot \mathbf x) \rangle  d\lambda_{\mathbb C}(\mathbf z) \, d\mu_{\mathbb C^d}(\mathbf x) \label{eq.ginverse2}\\
+&=& \langle f,  \mathcal Q h \rangle_{\mu_{\mathbb C^d}},
+\end{eqnarray}
+where $h^*$ is the complex conjugate of $h$.
+Note that \eqref{eq.ginverse2} holds because the measure $\mu_{\mathbb C^d}$ is invariant with respect to scalings in $\mathbb T^k$ (namely, $\mu_{\mathbb C^d}$ is rotationally symmetric). 
+\end{proof}
+
+Note this argument is not possible for $\mu$. We'll see below that $\mathcal Q$ is not self-adjoint with respect to any real inner product.
+
+Our argument in the previous section shows that when $U$ is a space generated by rational monomials, the projection onto $\bar U$ is easy to characterize. In particular, a simple computation (Proposition \eqref{eq.orthogonal}) shows that the complex rational monomials are orthogonal in $\mathscr L_2( \mathbb C^d, \mu_{\mathbb C^d})$.
+\begin{proposition} \label{eq.orthogonal}
+Let $U$ be the space of rational monomials, spanned by
+\begin{equation}
+\mathcal B:=\left\{\mathbf x^{\mathbf a}:= \prod_{i=1}^d x_i^{a_i}: \mathbf a=(a_1,\ldots , a_d) \in \mathbb Z^d\right\}.
+\end{equation} 
+Then  for all  $\mathbf x^{\mathbf a}, \mathbf x^{\mathbf a'} \in \mathcal B$ with $\mathbf a \neq \mathbf a'$ we have $\langle\mathbf x^{\mathbf a}, \mathbf x^{\mathbf a'}\rangle_\mu = 0$.
+\end{proposition}
+\begin{proof} Let $\mathbf a \neq \mathbf a'$, then
+\begin{align}
+ \langle\mathbf x^{\mathbf a}, \mathbf x^{\mathbf a'}\rangle_{\mu_{\mathbb C}} &= \int_{ X_{\mathbb C^d} } \prod_{i=1}^d x_i^{a_{i}} \bar{x}_i^{a'_{i}} d\mu_{\mathbb C^d} \\
+&= \int_{X_{\mathbb C^d}}\prod_{i=1}^d r_ie^{j a_i \theta_i} r_ie^{- j a'_i \theta_i}  d\mu_{\mathbb C^d},
+\end{align}
+where $x_i=e^{j \theta_i}$ and $j=\sqrt{-1}$. Now since $\mathbf a\neq \mathbf a'$ we can choose $s$ such that $a_s\neq a'_s$. Using Fubini-Tonelli's theorem we can write:
+\begin{align}
+\langle\mathbf x^{\mathbf a}, \mathbf x^{\mathbf a'}\rangle_{\mu_{\mathbb C}}
+&= \int_{ X_{\mathbb C^{d-1}}}  \prod_{\substack{i=1\\ i\neq s}}^d r_i e^{j (a_i - a_i') \theta_i}  d\mu_{\mathbb C^{d-1}} \int_{X_{\mathbb C}} r_s e^{j (a_s-a'_s )\theta_s} d\mu_{\mathbb C^1} ,
+\end{align}
+where the last term is zero because $a_s\neq a'_s$ and the measure $\mu_{\mathbb C^1}$ is rotationally symmetric. 
+\end{proof}
+
+
+
+%It seems like $\mathcal Q(\sum_{j=1}^k b_j \mathbf x^{\mathbf {a_j}}) = \sum_{j'=1}^{k'} b_{j'} \mathbf x^{\mathbf {a_{j'}}}$ where the only terms that appear on the RHS are dimensionless (i.e. dropping the dimensional terms). 
+%This is because the dimensionless monomials are invariant over $\mathcal Q$ and the rest of the monomials are orthogonal. However, this proof works in the complex case, not in the real case, but since the definition of $\mathcal Q$ is the same, a priori it should also be true for the real case. 
+%\begin{proposition} If $$
+%\end{proposition}
+%%%%%%%%%
+
+This setting allows to generalize the results from \citet{elesedy2021provably} to complex scalings of complex functions.
+\begin{proposition}
+Let $X\sim \mu_{\mathbb C^d}$ where $\mu_{\mathbb C^d}$ is a rotation invariant distribution in $A \subset \mathbb C^d$. Let $Y=f*(X) + \xi \in \mathbb C$, where $\xi$ is a random element of $\mathbb C$ that is independent of $X$ with zero mean and finite variance, and $f^*: A \to \mathbb C$ is scaling invariant. Then, for any $f$, the generalization gap satisfies
+\begin{equation}
+\Delta(f, \mathcal Q f) = \|f^\perp \|_{\mu_{\mathbb C^d}}^2.
+\end{equation}
+\end{proposition}
+
+\begin{comment}
+Given a ground truth function $f^*: \mathcal X^{p} \to \mathbb R$ with dimensionless output, we compute the excess risk of optimizing over units equivariant rational monomials in comparison with all rational monomials of the same degree. 
+Let 
+\begin{multline}\mathcal H_M =\Big\{f:\mathbb R^{p}\to \mathbb R: f(\mathbf x) = \sum_{r} b_r \prod_{i=1}^k x_i^{a_{ri}}: 
+\\ b_r\in \mathbb R, \mathbf a_r=(a_{r1},\ldots a_{rk})\in \mathbb Z^k,  \|\mathbf a_{r}\|_\infty\leq M \Big\} \label{Hm}
+\end{multline}
+be the space spanned by rational monomials on the input with degree smaller or equal than $M$ (the infinity norm in \ref{Hm} could be replaced by the 1-norm). This is a finite-dimensional vector and we consider the inner product with orthonormal basis: 
+\begin{equation}
+\mathcal B:=\{\mathbf x^{\mathbf a}:= \Pi_{i=1}^k x_i^{a_i}: \mathbf a \in \mathbb Z^k, \|\mathbf a \|_\infty \leq M \}
+\end{equation} 
+Let $\bar {\mathcal H} $ be subspace of dimensionless monomials, as in \eqref{b.pi}, a linear subspace of $\mathcal H_M$. Following the notation from \citep{elesedy_kernel} we write $\mathcal H_M = \bar {\mathcal H} \oplus \mathcal H^\perp$ where $\mathcal H^\perp$ is the orthogonal complement of $\bar {\mathcal H}$ inside $\mathcal H_M$.
+
+We consider $y = f^*(\mathbf x) + \epsilon$, where $f^*\in \bar {\mathcal H}$ (i.e. the ground truth is a dimensionless function). Given a function $f\in \mathcal H_M$ we decompose it as $f=\bar f + f^\perp$.
+A simple computation (see Lemma 6 in \citealt{elesedy2021provably}) shows that
+\begin{equation}
+    \Delta(f, \bar f) = \|f^\perp \|_2^2.
+\end{equation}
+Therefore, if 
+
+\begin{proposition}[Proposition 12 of \citet{elesedy2021provably}]
+
+\end{proposition}
+
+be a ground truth target function. We first observe that since the decoder function is determined by the problem (and not learn), without loss of generality we can assume that the target function is a function $f^*:\mathcal X^{p} \to \mathbb R$ with dimensionless output. 
+
+Reducing the problem of finding a units-equivariant function to finding a dimensionless function of dimensionless inputs.
+
+$f^*: \mathcal X \to \mathbb R$ is a target (units-equivariant) function.
+\end{comment}
+
+
+\paragraph{Discussion of real units-equivariant functions}
+Even though some dimensional quantities can be complex, for example electromagnetic field amplitudes in Fourier space, most dimensional quantities are real-valued, and the dimensional scalings are always real, therefore the above theory is not directly applicable.
+
+Unfortunately the analysis above will not hold for the real case. Note that the Reynolds operator defined in \eqref{eq.proj.complex} is well-defined for real-analytic functions and delivers the same projection in the rational monomials case (i.e. it drops the non-dimensionless rational monomials). However this projection does not correspond to an orthogonal projection with respect to any nontrivial measure $\mu$. One way to see this is by observing that the monomials cannot be orthogonal for the real measure $\mu$. For instance no real measure will satisfy that $\langle x^1, x^3 \rangle_\mu =0$ because $\langle x^1, x^3 \rangle_\mu = \int x^1 x^3 d\mu = \int x^2 x^2 d\mu = \langle x^2, x^2 \rangle_\mu$. 
+
+The underlying question here is, what is the right notion of projection of a real function onto the space of units-equivariant functions?
+The Reynolds projection is the most natural projection from an algebraic point of view, per the discussion following \eqref{eq.projection}.
+The orthogonal projection with respect to the $\mathscr L^2$-norm of the measure of the data is the one corresponding to the estimator risk \eqref{eq.risk}. The fact that these two projections diverge in the present case stems from the fact that the measure from which the data is drawn cannot itself be scaling-invariant. Furthermore, there is no reason to expect that the rational monomials are closed under the orthogonal projection in $\mathscr L^2(\mathbb R^d, \mu)$.
+
+
+
+
+Note that our algorithm does not perform a projection, it directly optimizes in a space of invariant functions. The generalization gap one may want to investigate is $\Delta(\hat f, \bar f)$ where $\hat f$ is the output of a baseline regression, and $\bar f$ is our units-equivariant regression. We show specific examples in \secref{sec:experiments}.
+
+%We could think of it doing a projection only in terms of a baseline regression (which is somehow what we do in the experiments).
+%This comparison baseline vs units equivariant may induce some sort of projection that looks more like an $\mathscr L^2$ projection rather than a Reynolds projection. % I'll try to analyze a concrete example here.
+
+%Basis for the L2 space that is orthogonal and includes a basis of the invariance subspace as a subset. Need a basis for the orthogonal complement to the invariant subspace. 
+
+\section{Experimental demonstrations}\label{sec:experiments}
+
+\paragraph{Symbolic regression: Simple springy pendulum}
+In this example, we consider a pendulum bob of mass $m$ (units of $\kg$) at the end of a linear spring, swinging under the influence of gravity.
+The total mechanical energy or hamiltonian $H$ (units of $\kg\,\m^{2}\,\s^{-2}$) of this system consists of a kinetic energy and two potential-energy contributions:
+\begin{align}
+    H = \underbrace{\frac{1}{2}\,\frac{|\mathbf{p}|^2}{m}}_{\text{kinetic energy}}
+    \underbrace{+\,\frac{1}{2}\,k_\text{s}\,(|\mathbf{q}| - L)^2}_{\substack{\text{spring} \\ \text{potential energy}}}
+    \underbrace{-\,m\,\mathbf{g}^\top\mathbf{q}}_{\substack{\text{gravitational} \\ \text{potential energy}}} ~,
+\end{align}
+where $\mathbf{p}$ is the 3-vector momentum of the bob (units of $\kg\,\m\,\s^{-1}$), $|\mathbf{p}|^2 = \mathbf{p}^\top\mathbf{p}$, $k_\text{s}$ is the spring constant (units of $\N\,\m^{-1}=\kg\,\s^{-2}$), $\mathbf{q}$ is the 3-vector position of the bob relative to the pivot (units of $\m$), $|\mathbf{q}|=\sqrt{\mathbf{q}^\top\mathbf{q}}$, $L$ is the natural length of the spring (units of $\m$), $\mathbf{g}$ is the acceleration due to gravity (units of $\m\,\s^{-2}$).
+The natural base units here are the SI base units $(\kg,\m,\s)$, but they could just as easily be (stone, furlong, fortnight).
+
+This is almost the simplest possible physics problem.
+We honor its simplicity by constructing an extremely simplifed symbolic regression:
+Given samples of the parameters $m,k_s,L,\mathbf{g}$, the initial conditions $\mathbf{p},\mathbf{q}$, and the corresponding values of the hamiltonian $H$, is it possible to infer the exact functional form of the hamiltonian?
+The answer is yes, of course; the question is: How much does units-equivariance help?
+The answer is: A lot.
+
+First we observe that, in Newtonian mechanics, the hamiltonian---or total mechanical energy---is a scalar.
+Thus the hamiltonian can be a function only of scalars and scalar products of the vector and scalar inputs \citep{villar}.
+We construct all rational scalar monomials of the inputs up to a well-defined degree, including, for example, $m\,k_s\,|\mathbf{q}|\,(\mathbf{g}^\top \mathbf{p})^{-2}$, where the vectors $\mathbf{g},\mathbf{p},\mathbf{q}$ are implicitly column vectors, $|\mathbf{q}|$ is the magnitude of $\mathbf{q}$, and $\mathbf{g}^\top \mathbf{p}$ is the scalar (inner) product of $\mathbf{g}$ and $\mathbf{p}$.
+For our purposes, the degree of the rational monomial is the maximum absolute value exponent appearing in the expression, so the example would have degree $2$.
+Then we construct all \emph{dimensionless} rational scalar monomials of the inputs up to the same well-defined degree, including, for example, $m\,k_s\,L^2\,|\mathbf{p}|^{-2}$, which is also of degree $2$ but dimensionless.
+It turns out that there are far fewer dimensionless rational scalar monomials than rational scalar monomials to any degree.
+
+In detail, the dimensional scalar inputs to our monomial lists are the $9$ scalars $m$, $k_s$, $L$, $|\mathbf{g}|$, $(\mathbf{g}^\top \mathbf{p})$, $(\mathbf{g}^\top \mathbf{q})$, $|\mathbf{p}|$, $(\mathbf{p}^\top \mathbf{q})$, $|\mathbf{q}|$.
+We produce all monomials to maximum degree $2$ but subject to two additional rules:
+While we count scalars $|\mathbf{g}|$, $|\mathbf{q}|$, and $|\mathbf{p}|$ as having degree $1$, we count scalars $\mathbf{g}^\top \mathbf{p}$ and $\mathbf{p}^\top \mathbf{q}$ and so on as having degree $2$ (so at maximum degree $2$, say, they cannot appear squared).
+We also did not permit the dot products $\mathbf{g}^\top \mathbf{p}$ and $\mathbf{p}^\top \mathbf{q}$ and so on to appear with negative powers (because these inverses can produce unbounded singular values in the design matrix).
+With these inputs and these rules, there are $286$ dimensionless monomials to (only!) degree $2$, and $187\,500$ total monomials (irrespective of dimensions) to degree $2$.
+
+Given the enormous difference between $286$ and $187\,500$, it is obvious that units equivariance is incredibly informative.
+We demonstrate the value experimentally by performing symbolic regressions for the hamiltonian $H$ with two different objectives; one an L2, and the other a LASSO objective.
+In each case, the objective is the norm of the difference between the predicted and true hamiltonian value, but made dimensionless by dividing by the quantity $k_s\,L^2$, which has units of energy.
+In the L2 case, 8192 training-set objects are used, and in the LASSO case, 128.
+Training-set objects are drawn from distributions in $m, k_s, L, \mathbf{g}, \mathbf{p}, \mathbf{q}$, in which the scalars $m, k_s, L$ are drawn from uniforms and the vectors $\mathbf{g}, \mathbf{p}, \mathbf{q}$ are drawn from isotropically oriented unit vectors times magnitudes drawn from uniforms.
+In both cases, the regression applied to the dimensionless-feature design matrix delivers machine-precision-level errors on held-out data, and linear-fit coefficients that represent the correct formula or expression for the hamiltonian.
+
+The large number of baseline monomials ($187\,500$) makes it computationally difficult to perform equivalent baseline comparisons. %BD: (changed from impossible) this is not that large to be honest, in genomics we do regressions with mil dimensions;
+This alone demonstrates the value of the units-equivariant approach for symbolic-regression-like problems.
+However, in order to test this, we augment the $286$ dimensionless monomials with $500$ randomly chosen dimensional monomials and---at these training-set sizes---the symbolic regressions fail:
+They deliver an order of magnitude worse mean-squared error on held-out test data and they do not find the correct coefficients for the hamiltonian expression.
+The code is publicly available at Google Colab.\footnote{See \url{https://dwh.gg/springy}.}
+
+\paragraph{Emulator: Springy double pendulum}
+Next we consider the task of learning the dynamics of the springy double pendulum, which is a pair of single springy pendula connected with a free pivot\footnote{The source code is published in \url{https://github.com/weichiyao/ScalarEMLP/tree/dimensionless}.} (Figure~\ref{fig:dp_system}).
+The goal here is to predict its trajectory at later times from different initial states.
+For this task, for each of the realization of the $N$ training data, $m_1, m_2, k_{s1}, k_{s2}, L_1, L_2$ are randomly generated from $\Unif(1,2)$, as well as the norm of the gravitational acceleration vector $\mathbf{g}$. Initializations at $t_0$ of the pendulum positions and momenta are generated as those in \citet{finzi} and \citet{yao}. 
+The training labels are the positions and momenta at a set of $\tilde{T}$ later times $t\in\{t_1,\ldots,t_{\tilde{T}}\}$:
+\begin{equation}
+\mathbf{z}(t)=(\mathbf{q}_1(t),\mathbf{q}_2(t),\mathbf{p}_1(t),\mathbf{p}_2(t)), \quad t\in\{t_0, \ldots,t_{\tilde{T}}\}. \label{eq.training}
+\end{equation}  
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[scale=0.15]{imgs/dp_system.png}
+    \caption{The springy double pendulum.}
+    \label{fig:dp_system}
+\end{figure}
+
+In our experiments, the training set consists of positions and momenta of the pendula in a sequence of $\tilde T=10$ equispaced consecutive times sampled from a sequence of $T=60$ equispaced times obtained by integrating the dynamical system according to its ground truth parameters. % the sets of times $\{t_0^i,t_1^i, \ldots,t_{\tilde{T}}^i\}$ for each $i$-th training data point is a contiguous subsequence of length $\Tilde{T}=10$ randomly selected from the time scales of length $T=60$ starting from $t=0$. 
+In the testing stage, the trajectory at $t=1,\ldots,T$ from different initial states are predicted given the initializations at $t=0$. We consider three different testing setups to compare the dimensionless scalar-based implementation with the dimensional baseline considered in \citet{yao}. This baseline is currently state-of-the-art on this problem. It embodies Hamiltonian and geometric symmetries and performs very well \citep{yao}.
+
+The test data used in Experiment~1 is generated from the same distribution as the training dataset. The test data used in Experiment~2 consists of applying a transformation to the test data in Experiment~1, where each of the input parameters that include a power of $\kg$ in its units ($m_1$, $m_2$, $k_{s1}$, $k_{s2}$, $\mathbf{p}_1(0)$ and $\mathbf{p}_2(0)$) is scaled by a factor randomly generated from $\Unif(3,7)$. The test data used in Experiment~3 has the input parameters $m_1$, $m_2$, $k_{s1}$, $k_{s2}$, $L_1$ and $L_2$ generated from $\Unif(1,5)$. 
+We use the same training data $N=30000$ for all three experiments and each test set consists of $500$ data points. That is, Experiments~2 and 3 have out-of-distribution test data, relative to their training data.
+
+We implement Hamiltonian neural networks (HNNs; \citealt{greydanus2019hnn,sanchezgonzalez2019hamiltonian}) with scalar-based MLPs for this learning task. In particular, we have a set of scalar inputs $\mathcal{S}=\{m_1,m_2,k_{s1},k_{s2},L_1,L_2\}$ and a set of vector inputs $\mathcal{V} = \{\mathbf{g}, \mathbf{p}_1(0),\mathbf{p}_2(0),\mathbf{q}_1(0) ,\mathbf{q}_2(0)-\mathbf{q}_1(0)\}$. We construct the dimensional scalars (baseline) and dimensionless scalars based on these two sets of inputs. 
+
+The dimensional scalar inputs to the baseline MLPs include 32 scalars: 
+(i) scalar inputs $\mathcal{S}$, as well as their inverses $\{1/a:a\in\mathcal{S}\}$;
+(ii) inner products of the vector inputs $\{\mathbf{u}^\top\mathbf{v}:\mathbf{u},\mathbf{v}\in\mathcal{V}\}$, as well as their magnitudes $\{|\mathbf{u}|:\mathbf{u}\in\mathcal{V}\}$.  
+
+The dimensionless scalar inputs are the following 32 scalars: (i) $m_1/m_2$, $k_{s1}/k_{s2}$, $L_1/L_2$ and their inverses;
+(ii) we divide each vector input by its magnitude before we compute the inner products, which gives a set of dimensionless scalars $\{(\mathbf{u}^\top \mathbf{v})/(|\mathbf{u}||\mathbf{v}|):\mathbf{u},\mathbf{v}\in\mathcal{V}\}$;
+(iii) we also consider dimensionless rational scalar monomials $(m_i\,|\mathbf{g}|)/(k_{si}\,L_i)$, $(k_{s_i}\,L_i)/(m_i\,|\mathbf{g}|)$, $|\mathbf{q}_i(0)|/L_i$, $|\mathbf{q}_i(0)|^2/L_i^2$, $|\mathbf{p}_i(0)| /( \sqrt{m_i\,k_{si}}\,L_i)$, $|\mathbf{p}_i(0)|^2 /(m_i\,k_{si}\,L_i^2)$, $i=1,2$. 
+We use dimensionless scalars as inputs to the MLPs, which makes the outputs of the MLPs also dimensionless. 
+The decoder then scales the outputs to restore the hamiltonian $H$ units of $\kg\,\m^2\,\s^{-2}$. At this stage we employ the following 26 scaling factors: $k_{sr}\,L_i\,L_j$, $m_i\,L_j\,|\mathbf{g}|$, $m_i\,\mathbf{g}^\top \mathbf{q}_j(0)$, $(\mathbf{p}_i(0)^\top \mathbf{p}_j(0))/m_r$, $k_{sr}\,\mathbf{q}_i(0)^\top \mathbf{q}_j(0)$, $i,j,r\in\{1,2\}$, all of which have the units of $\kg\,\m^2\,\s^{-2}$. 
+
+The dimensional scalars-based and the dimensionless scalars-based MLPs both have equal numbers of model parameters, and are trained with the same set of hyper-parameters (number of training epochs, learning rate, etc.).
+
+\begin{figure}[tp]
+    \centering
+    \includegraphics[width=0.85\textwidth]{imgs/phase_test_jobID1_1.pdf}\\[3ex]
+    \includegraphics[width=0.85\textwidth]{imgs/phase_test1_jobID1_1.pdf} 
+    \caption{Ground truth and predictions of mass 1 (top) and 2 (bottom) in the phase space w.r.t. each dimension. \textbf{Top 6 panels}: Results from Experiment~1, where the test data are generated from the same distribution as those used for training. Here the dimensional scalar based MLPs exhibit slightly more accurate predictions for longer time scales. \textbf{Bottom 6 panels}: Results from Experiment~2, where we use the same test data in Experiment~1 but each with its inputs that have units of $\kg$ randomly scaled by a factor generated from $\Unif(3,7)$. Here the dimensionless scalar based MLP is able to provide comparable performance to Experiment~1, while using the dimensional scalars gives much worse predictions.}
+    \label{fig:double_pendulum}
+\end{figure}
+\begin{table}[t!]
+    \centering
+    \begin{tabular}{L{2.25cm} C{2.5cm} C{2.5cm} C{2.5cm} }
+         \toprule
+         Scalar-based MLPs   & Experiment~1 & Experiment~2 & Experiment~3\\
+         \midrule
+         Baseline   & $.0055\pm .0030$    & $.3669\pm .0050$  & $.1885\pm	.0031$\\
+         \textbf{Dimensionless} & $.0061\pm .0024$ & $.0089\pm .0034$ & $.0435 \pm .0047$\\
+         \bottomrule
+    \end{tabular}
+    \caption{Geometric mean (standard deviation computed over 10 trials) of state relative errors of the springy pendulum over $T=60$. Results are shown for the dimensional vs dimensionless scalar-based Hamiltonian Neural Networks (implemented as an MLP) on three different test sets. Test data used in Experiment~1 are generated from the same distribution as the training dataset; test data used in Experiment~2 using the same test data in Experiment~1 but each with its inputs that have units of $\kg$ randomly scaled by a factor generated from $\Unif(3,7)$; test data used in Experiment~3 has mass $m$, scalar spring constant $k_s$ and natural spring length $L$ generated from a different distribution.}
+    \label{tbl:double_pendulumn}
+\end{table} 
+
+The prediction error (or state relative error) at time $t$ is defined as
+\begin{align}
+    \text{State.RelErr}(t) =  \frac{\sqrt{(\hat{\mathbf{z}}(t)-\mathbf{z}(t))^\top (\hat{\mathbf{z}}(t)-\mathbf{z}(t))}}{\sqrt{\hat{\mathbf z}(t)^\top\hat{\mathbf z}(t)}+\sqrt{\mathbf z(t)^\top \mathbf z(t)}}\label{eq:state_relerr}.
+\end{align}
+\tabref{tbl:double_pendulumn} reports the average errors over $\{t_1, \ldots, t_{60}\}$. When the test data are generated from the same distribution as the training data, the dimensional scalar based MLP exhibits slightly more accurate predictions for longer time scales using the same training hyper-parameters. When we have out-of-distribution test data as in Experiment~2 and 3, the performance of both methods deteriorate as expected, but the dimensionless scalar based MLP exhibits a significantly better generalization performance. In particular, if we rescale the units as in Experiment~2, where all the quantities that have the units of $\kg$ are scaled by the same randomly generated factor, the dimensionless scalar based MLP is able to provide comparable  performance to results from Experiment~1. Actually, this could be considered to be an in-distribution test set in the space of dimensionless scalars (see \secref{sec:bias}), and thus the only reason why the error is different is because the state relative error \eqref{eq:state_relerr} is not dimensionless.
+In other words, our experiments show that imposing units equivariance increases the generalization performance significantly, especially in out-of-distribution settings.
+
+Figure~\ref{fig:double_pendulum} provides an illustration of the predicted orbits by the dimensional and the dimensionless methods in Experiment~1 and Experiment~2.
+
+\paragraph{Emulation: Arid vegetation model}
+We further explore unit equivariance informed learning inspired by a non-linear problem in ecology\footnote{See \url{https://dwh.gg/Rietkerk}.}. In semi-arid environments, banded vegetation is a characteristic feature of plant self-organization which is modulated by the quantity of water available \citep{dagbovie2014pattern}. Inverting emergent vegetation patterns as a function of environmental changes is a central problem in ecology. Towards this end, a popular approach is the Rietkerk model, a set of differential equations relating surface water $u$, water absorbed into the soil $w$, and vegetation density $v$ \citep{rietkerk}.
+\begin{table}[t]
+    \centering
+    \begin{tabular}{ c |c| c |c }
+          & description & default & units \\
+         \hline
+         $R$ & rainfall  & $0.375 $  & $\, \l \, \d^{-1}\, \m^{-2}$\\
+         $\alpha$ & infiltration rate & 0.2 & $\d^{-1}$ \\
+         $k_2$ & saturation const. & 5 & $\g \, \m^{-2}$ \\
+         $W_0$ & water infiltration const. & 0.1 & --- \\
+         $D_u$ & surface water diffusion & 100 & $\d^{-1}\, \m^{2}$ \\
+         $g_m$ & water uptake & 0.05 & $\l\, \g^{-1}\, \d^{-1}$ \\
+         $k_1$ & water uptake constant & 5 & $\l\, \m^{-2}$ \\
+         $\delta_w$ & soil water loss & 0.2 & $ \d^{-1}$ \\
+         $D_w$ & soil water diffusion & 0.1 & $  \d^{-1}\, \m^2$ \\
+         $c$ & water to biomass & 20 & $  \l^{-1}\, \g$ \\
+         $\delta_v$ & vegetation loss & 0.25 & $ \d^{-1}$ \\
+         $D_v$ & vegetation diffusion & 0.1 & $  \d^{-1}\, \m^2$ \\[2ex]
+         $T$ & total integration time & 200 & $  \d$
+         \\
+        $\delta t$ & integration time step & 0.005 & $  \d$
+        \\
+        $L$ & integration patch length & 200 & $  \m$
+        \\
+        $\delta l$ & spatial step size & 2 & $\m$ \\
+        \hline
+    \end{tabular}
+\begin{tabular}{c}
+Dimensionless features\\
+\hline
+$c \, \alpha^{-1}\,g_m$ \\
+$ R^{-1} \alpha \, k_1 $\\
+$R^{-1}c^{-1} \alpha\, k_2 $ \\
+$\alpha^{-1} \delta_w $\\
+$\alpha^{-1} \delta_v$ \\
+$W_0$ \\
+$\alpha^{-1} D_v \, L^{-2}$ \\
+$\alpha^{-1}D_u \, L^{-2}$ \\
+$ \alpha\, T$ \\
+$ \alpha\, \delta t$ \\
+$ \alpha^{-1}D_w \, L^{-2} $\\
+$ L^{-1}\delta l$ \\
+\hline
+\end{tabular}
+    \caption{(Right) Parameters in the Rietkerk model and their units \citep{rietkerk}. The bottom four parameters are parameters of the integration. (Left) Basis of dimensionless features found by our method.}
+    \label{table.params}
+\end{table}
+These differential equations are
+\begin{align}\label{eq:rietkerk}
+    \frac{\dd u}{\dd t} &= R - \alpha\,\frac{v + k_2\,W_0}{v + k_2}\,u + D_u\,\nabla^2 u\nonumber\\
+    \frac{\dd w}{\dd t} &= \alpha\,\frac{v + k_2\,W_0}{v + k_2}\,u - g_m\,\frac{v\,w}{k_1 + w} - \delta_w\,w + D_w\,\nabla^2 w\nonumber\\
+    \frac{\dd v}{\dd t} &= c\,g_m\,\frac{v\,w}{k_1 + w} - \delta_v\,v + D_v\,\nabla^2 v,
+\end{align}
+where $u,w,v$ are all functions of both two-dimensional spatial coordinates and time $t$, and the $\nabla^2$ operator is the scalar second derivative operator (Laplacian) with respect to position.
+In detail, $u$ denotes the surface water density (units of $\mm = \l\,\m^{-2}$), $v$ is the soil water content (same units as $u$), and $v$ is the vegetation density (units of $\g\,\m^{-2})$. Further, the time derivative operator has units of $\d^{-1}$, the Laplacian operator has units of $\m^{-2}$, and the units of the other quantities ($R$, $w_0$, $g_m$, and so on) can be inferred from the equations in \eqref{eq:rietkerk}.
+Here the natural base units are $(\l, \g, \d, \m)$.
+Note that as there is a conversion $1000\,\l=1\,\m^3$,  we could, in principle, reduce the base units by one. However, there is no direct communication between water volume and distance across the surface, so these units can be kept separate.
+In general, the units equivariance is more powerful when there are more independent base units, which leads to substantial design decisions for the investigator. The Rietkerk model is determined by a set of dimensional parameters described in Table~\ref{table.params}, and the initial conditions $u_0, v_0, w_0$. We consider random initial conditions, and random choice of parameters, uniformly sampled between 0.5 and 1.5 times the default value. For each choice of parameters we use finite differences to estimate the derivatives and Laplacian, and integrate the Rietkerk model using Euler's method with time step $0.005\, \d$, in a $200\,\m \times 200\, \m$ grid, with $2\,\m$ pixel spacing.
+
+We consider the task of predicting, from initial conditions, the average vegetation density after $200$ days (the empirical steady state solution of \eqref{eq:rietkerk} at default parameters). We produce a training set of 1000 initial configurations and a test set of 100 configurations. A significant portion of these simulations ended up on total vegetation death at finite time. We didn't consider these examples for the regression task -- extending our results to classification is a future direction.  
+\begin{figure}[tp]
+    \centering
+    \includegraphics[height=0.21\textwidth]{imgs/row3.pdf}
+    \includegraphics[height=0.17\textwidth]{imgs/colorbar3.pdf}
+    %\includegraphics[width=0.1\textwidth]{imgs/colorbar.pdf}\\
+    \\[4ex]
+    \includegraphics[width=0.5\textwidth]{imgs/Rietkerk.pdf}
+    \caption{(Top) The evolution of vegetation density from random initialization according to a Rietkerk model. The model's parameters are given in Table~\ref{table.params}. (Bottom) We consider 1000 random initializations and evolutions according to random parameters sampled from a uniform distributions supported in $[0.5x , 1.5x]$ where $x$ are the baseline Rietkerk parameters from Table~\ref{table.params} (the integration parameters remain fixed). Our regression task is to predict the spatial mean vegetation after 200 days as a function of the Rietkerk parameters. The light blue dots show the (naive) regression vs Rietkerk model for a linear regression on the model parameters, its inverses and the constant 1 (33 features in total) on a held out test set. The dark red dots correspond to a linear regression using a basis of dimensionless features obtained with our (units-equivariant) method, their inverses and the constant 1 (25 features in total) in the same test set. The naive regression has a test MSE of  $26.3 \, \g^2 \, \m^{-4}$ whereas the units-equivariant regression has a MSE of $12.6 \, \g^2 \, \m^{-4}$. The Pearson correlation of the prediction and the target value is 0.94 for the naive regression and 0.97 for the units-equivariant regression. }
+    \label{fig:vegetation}
+\end{figure}
+We perform two forms of linear regression, a baseline regression and a unitless regression. The baseline regression uses $33$ features: the dimensional parameters, their inverses, and the dimensionless constant 1 which describes affine linear functions. The dimensionless linear regression uses the method described in \secref{sec:approach}. It uses the Smith normal form to construct a basis of 12 dimensionless features, and it uses them, their inverses and the constant 1, obtaining 25 regression features. The results show that the dimensionless regression has significantly better performance in Figure \ref{fig:vegetation}.
+
+Our toy model explores the impact of selecting dimensionally correct features on predicting average vegetation outcomes when data are generated from a well characterized ecological model. However, other interesting symbolic regression problems remain open.
+For example, is the Rietkerk model considered the most appropriate for modelling banded vegetation patterns in general? A recent approach aimed to address the related inverse problem of determining the underlying structure of a nonlinear dynamical system from data \citep{brunton2016discovering}. There, sparse regression and compressed sensing tools informed the selection of a small number of informative, non-linear terms hypothesized to explain an observed dynamics. Thus, these kinds of problems present an intriguing venue for future exploration of units equivariance as a principled way to impose additional sparsity in a non-linear feature space which could further aid methods like that of \citet{brunton2016discovering} by restricting feature selection to units-equivariant, physically informative terms.
+
+\paragraph{Symbolic regression: The black-body radiation law}
+One of the most important moments in modern physics was the introduction of the quantum-mechanical constant $h$ by Planck around 1900 \citep{planck}.
+In our language, this discovery can be seen as a symbolic regression, in which Planck discovered a simple symbolic expression that accurately summarized a host of data sets on radiating bodies at different temperatures.
+The dimensional constant $h$ was introduced to explain the short-wavelength part of the radiation law, but it ended up being the governing constant for all quantum phenomena; it led to a simple prediction of the spectrum of the Hydrogen atom \citep{bohr} and is the core of the Schr\"odinger equation \citep{schrodinger}; this was important!
+
+The black-body radiation $B_\lambda(\lambda;T)$ from a perfectly radiating and absorbing (black) thermal source at temperature $T$ is properly measured in intensity units, which are (or can be) energy per time per wavelength per area per solid angle.
+Because solid angles are dimensionless, this translates to SI units of $\J\,\m^{-3}\,\s^{-1}$.
+The problem Planck faced was a set of measurements (labels) $B_\lambda(\lambda;T)$ at many wavelengths $\lambda$ for bodies at multiple temperatures $T$.
+The input features $\lambda,T,c,\kB$ and output labels $B_\lambda(\lambda;T)$ of the problem are summarized in \tabref{tab:planck}, along with their units in the SI base unit system of $\kg,\m,\s,\K$.
+
+\begin{table}[t]
+    \centering
+    \begin{tabular}{r|l|c|l}
+    & \emph{description} & \emph{units} & \emph{comment} \\ \hline
+    & & & \\[-1ex]
+    $B_\lambda(\lambda;T)$ & intensity & $\kg\,\m^{-1}\,\s^{-3}$ & regression label \\
+    & & & \\[-1ex]
+    $\lambda$ & wavelength & $\m$ & variable feature\\
+    $T$ & temperature & $\K$ & variable feature\\
+    $c$ & speed of light & $\m\,\s^{-1}$ & fundamental constant\\
+    $\kB$ & Boltzmann's constant & $\kg\,\m^{2}\,\s^{-2}\,\K^{-1}$ & fundamental constant\\
+    \end{tabular}
+    \caption{Labels and features in Planck's black-body radiation problem and their units.}
+    \label{tab:planck}
+\end{table}
+
+In terms of the language illustrated in \figref{fig:approach}, the decoder $g_{\mathbf{x},\mathbf{v}}$ involves multiplying the dimensionless output of a dimensionless regression by a dimensional quantity with the same units as the labels $B_\lambda(\lambda;T)$.
+The only possible dimensional quantity that can be made out of the features that matches the dimensions of the labels is
+\begin{equation}
+    \frac{c}{\lambda^4}\,\kB\,T ~,
+\end{equation}
+which has units of intensity.
+The featurizer $\phi$ makes all possible dimensionless quantities out of the inputs.
+But wait, there are no (non-trivial) dimensionless features possible!
+In a dimensionless regression, the \emph{only} available input feature is the dimensionless constant \emph{unity}.
+That is, in our approach, the only possible outcome of the regression in this case is
+\begin{eqnarray}\label{eq:noh}
+    B_\lambda(\lambda;T) = C\,\frac{c}{\lambda^4}\,\kB\,T ~,
+\end{eqnarray}
+where $C$ is a universal constant.
+This is a classical dimensional-analysis argument or result!
+And it was probably one of the cases that inspired the original formulation of the Buckingham pi theorem (\citealt{buckingham1914pi}; although we emphasize that we are not making any historical claim).
+
+There are two comments to make here.
+The first is that this form \eqref{eq:noh} is not a good fit to the data!
+Thus the method we are proposing here fails.
+The explanation for this failure is that there is a dimensionless constant, $h$ (now known as Planck's constant) that is missing from our formulation in \tabref{tab:planck}.
+The second is that this form \eqref{eq:noh} is a perfect fit to the data \emph{at long wavelengths}.
+That is, at long wavelengths, where quantum occupation numbers are high, the problem behaves classically, and the data are extremely well explained by \eqref{eq:noh}, with $C=2$.
+This result (with $C=2$) is called the Rayleigh–-Jeans law.
+If the reader is interested in the history of physics, the Rayleigh--Jeans law is the lynchpin of the ultraviolet catastrophe, which is a paradox of classical statistical mechanics, resolved by quantization.
+
+What Planck discovered or realized is that the data could only be explained with the introduction of a new dimensional universal constant.
+He had choices for the dimensions of this constant, but he set it to have dimensions of energy times time.
+Planck's symbolic regression led to the complete expression
+\begin{eqnarray}
+    B_\lambda(\lambda;T) = \frac{2\,h\,c^2}{\lambda^5}\,\frac{1}{\exp(\frac{h\,c}{\lambda\,\kB\,T})-1}~,
+\end{eqnarray}
+which reduces to \eqref{eq:noh} with $C=2$ in the limit $\lambda\rightarrow\infty$.
+This result required the introduction of the dimensional constant $h$.
+This constant (and the physics it implies) resolved the ultraviolet catastrophe, and began the establishment of quantum mechanics.
+In the approach advocated here, we have no way to learn or discover missing dimensional constants.
+That is a limitation of our approaches, and motivates future work.
+
+\section{Discussion}
+
+In the above, we defined units equivariance for machine learning, with a focus on regression and complex functions.
+A function obeying this equivariance obeys the exact scalings that are required by the rules of dimensional analysis. These scalings must be obeyed by any theory or function in use in the natural sciences.
+
+We developed a simple framework for implementing units equivariance into regression problems.
+This framework puts burdens on the investigator---burdens of having consistent units for all inputs, and also a comprehensive list of dimensional constants---but is otherwise lightweight in terms of modifying existing regression methods.
+We did not consider the important problems of learning dimensions, or discovery of missing dimensionless inputs, but these are worthy extensions of what we looked at here.
+
+We argued that imposing units equivariance must improve the bias and variance of regression methods, both because it incorporates correct information, and also because it reduces model capacity at fixed complexity, often by an enormous factor.
+The equivariance also enables out-of-sample generalization, because a test set that doesn't overlap a training set in dimensional inputs will often significantly overlap in dimensionless combinations of those inputs.
+We illustrated these effects empirically with a few simple experiments.
+
+Units equivariance applies to all functions in the natural sciences.
+It won't be useful everywhere.
+In particular, it is most useful when there are many independent units at play, and the full panoply of physical constants is known.
+This is not true, say, for standard image-recognition tasks, for which all the inputs have the same units (intensity in image pixels) and the physical quantities (involved in the identification of pandas and kittens, say) are not known.
+It is also not true in natural-science problems where there might be unknown physical constants or physical laws at play.
+The discovery of physical laws is often the discovery of dimensional physical constants, as our black-body radiation law example problem (\secref{sec:experiments}) illustrates.
+
+However, we are very optimistic about the usefulness of units equivariance in problems of emulation and symbolic regression.
+In these settings, all symmetries are exact, and often all inputs (including all fundamental constants) are known (and have known units).
+In particular, some of the cleanest physics problems might be in the area of the growth of structure in the Universe, where there are very few dimensioned quantities and the physics is dominated by one force (gravity).
+These problems are of great interest at the present day, and have attracted very promising work with machine learning methods (for example, \citealt{he, berger, kodi, troster}).
+
+\paragraph{Acknowledgments:}
+It is a pleasure to thank
+  Timothy Carson (Google),
+  Miles Cranmer (Princeton),
+  Samory Kpotufe (Columbia),
+  Sanjoy Mahajan (Olin College),
+  Bernhard Sch\"olkopf (MPI-IS),
+  Kate Storey-Fisher (NYU), and
+  Wenda Zhou (NYU and Flatiron Institute)
+for valuable discussions.
+SV was partially supported by
+ONR N00014-22-1-2126, the NSF–Simons Research Collaboration on the Mathematical and Scientific Foundations of Deep Learning
+(MoDL) (NSF DMS 2031985), and the TRIPODS Institute for the Foundations of Graph and Deep Learning at Johns Hopkins University.
+
+\bibliography{units}
+
+\end{document}
